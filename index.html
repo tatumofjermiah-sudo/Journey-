@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Journey — Jermiah Tatum</title>
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body data-mood="neutral">
+
+  <!-- Particle canvas background -->
+  <canvas id="particle-canvas"></canvas>
+
+  <!-- Ambient overlay symbols -->
+  <div class="ambient-symbols" aria-hidden="true">
+    <span class="sym sym-anarchy">&#9765;</span>
+    <span class="sym sym-love">愛</span>
+    <span class="sym sym-war">WAR</span>
+    <span class="sym sym-anarchy s2">&#9765;</span>
+    <span class="sym sym-love s3">愛</span>
+    <span class="sym sym-war s4">WAR</span>
+  </div>
+
+  <!-- ── NAVIGATION ── -->
+  <nav id="main-nav">
+    <a href="#about" class="nav-link">About</a>
+    <a href="#tattoos" class="nav-link">Tattoos &amp; Symbols</a>
+    <a href="#values" class="nav-link">Values</a>
+    <a href="#daily" class="nav-link">Daily Life</a>
+    <a href="#journal" class="nav-link">Journal</a>
+  </nav>
+
+  <!-- ── HERO ── -->
+  <header id="hero">
+    <div class="hero-inner">
+      <div class="fallen-angel-motif" aria-hidden="true"></div>
+      <p class="hero-sub">a living journal</p>
+      <h1 class="hero-title">Jermiah Tatum</h1>
+      <p class="hero-desc">26 · Father · Dreamer · War within, Love always</p>
+      <a href="#journal" class="cta-btn">Enter the Journey</a>
+    </div>
+    <div class="scroll-hint" aria-hidden="true"><span></span></div>
+  </header>
+
+  <!-- ── ABOUT ME ── -->
+  <section id="about" class="section">
+    <div class="section-inner">
+      <h2 class="section-title" data-symbol="愛">About Me</h2>
+      <div class="about-grid">
+        <div class="about-card" data-reveal="I am defined by everything I've survived.">
+          <h3>Who I Am</h3>
+          <p>Jermiah Tatum. 26. Father first, everything else second. I carry depth that most people never see on the surface—intensity layered beneath stillness, fire hidden under calm.</p>
+        </div>
+        <div class="about-card" data-reveal="Every scar is a chapter I didn't let end me.">
+          <h3>What Drives Me</h3>
+          <p>The desire to be present—for my child, for myself, for the moments that matter. I process the world through reflection, through ink, through words. Introspection isn't weakness; it's how I navigate.</p>
+        </div>
+        <div class="about-card" data-reveal="Being a father changed the equation of everything.">
+          <h3>My Purpose</h3>
+          <p>To leave something real behind. Not just a memory, but a mark—in the way I raise my child, in the honesty of my words, in the art I carry on my skin.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── TATTOOS & SYMBOLS ── -->
+  <section id="tattoos" class="section section-alt">
+    <div class="section-inner">
+      <h2 class="section-title" data-symbol="&#9765;">Tattoos &amp; Symbols</h2>
+      <p class="section-intro">Every mark is a word I chose permanently. Each symbol lives in the skin—and now, on this page.</p>
+      <div class="tattoo-grid">
+
+        <div class="tattoo-card" tabindex="0">
+          <div class="tattoo-icon fallen-angel-icon" aria-label="Fallen angel without wings"></div>
+          <h3>Fallen Angel</h3>
+          <p class="tattoo-loc">Left Bicep</p>
+          <p class="tattoo-meaning">Wings removed. Still divine. Still falling. Still choosing to rise or descend on my own terms. The absence of wings isn't a loss—it's freedom from expectation.</p>
+          <div class="tattoo-reveal" aria-hidden="true">I fell. But I chose where I landed.</div>
+        </div>
+
+        <div class="tattoo-card" tabindex="0">
+          <div class="tattoo-icon anarchy-icon" aria-label="Anarchy symbol">&#9765;</div>
+          <h3>Anarchy</h3>
+          <p class="tattoo-loc">Personal Symbol</p>
+          <p class="tattoo-meaning">Not chaos—sovereignty. The refusal to be controlled by systems, expectations, or definitions that were never made for you. Self-rule, self-accountability.</p>
+          <div class="tattoo-reveal" aria-hidden="true">My rules. My life. My consequence.</div>
+        </div>
+
+        <div class="tattoo-card" tabindex="0">
+          <div class="tattoo-icon kanji-icon" aria-label="Japanese love symbol">愛</div>
+          <h3>Love (愛)</h3>
+          <p class="tattoo-loc">Personal Symbol</p>
+          <p class="tattoo-meaning">The Japanese character for love. Deep, encompassing, sacrificial. Not the soft version—the kind that costs you something and you pay it anyway.</p>
+          <div class="tattoo-reveal" aria-hidden="true">I love hard, even when it hurts.</div>
+        </div>
+
+        <div class="tattoo-card" tabindex="0">
+          <div class="tattoo-icon war-icon" aria-label="War symbol">WAR</div>
+          <h3>War</h3>
+          <p class="tattoo-loc">Personal Symbol</p>
+          <p class="tattoo-meaning">Not violence—internal conflict. The daily war between who I was, who I am, and who I'm becoming. The struggle that doesn't end but builds character.</p>
+          <div class="tattoo-reveal" aria-hidden="true">Every day is a battle. I'm still standing.</div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ── PERSONAL VALUES ── -->
+  <section id="values" class="section">
+    <div class="section-inner">
+      <h2 class="section-title" data-symbol="WAR">Personal Values</h2>
+      <div class="values-list">
+        <div class="value-item" data-index="1">
+          <span class="value-num">01</span>
+          <div class="value-content">
+            <h3>Presence</h3>
+            <p>Showing up fully—for my child, for moments, for the difficult conversations nobody wants to have. Being there matters more than being perfect.</p>
+          </div>
+        </div>
+        <div class="value-item" data-index="2">
+          <span class="value-num">02</span>
+          <div class="value-content">
+            <h3>Honesty</h3>
+            <p>Even when it's uncomfortable. Especially with myself. I've seen what dishonesty costs—in relationships, in self-respect, in the mirror at 3 a.m.</p>
+          </div>
+        </div>
+        <div class="value-item" data-index="3">
+          <span class="value-num">03</span>
+          <div class="value-content">
+            <h3>Growth</h3>
+            <p>Not for anyone else. For the version of myself my child will one day look up to. Growth that is uncomfortable, real, and earned.</p>
+          </div>
+        </div>
+        <div class="value-item" data-index="4">
+          <span class="value-num">04</span>
+          <div class="value-content">
+            <h3>Sovereignty</h3>
+            <p>The right to define myself on my own terms. No label, institution, or expectation gets to write my story without my consent.</p>
+          </div>
+        </div>
+        <div class="value-item" data-index="5">
+          <span class="value-num">05</span>
+          <div class="value-content">
+            <h3>Love as Action</h3>
+            <p>Not the easy kind. The kind that shows up tired, that forgives, that stays when leaving would be simpler. Love is a verb, and I practice it daily.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── DAILY LIFE ── -->
+  <section id="daily" class="section section-alt">
+    <div class="section-inner">
+      <h2 class="section-title" data-symbol="&#9765;">Daily Life</h2>
+      <div class="daily-grid" id="daily-entries">
+        <!-- Populated by JS from localStorage -->
+      </div>
+      <div class="daily-form-wrap">
+        <h3>Add a Daily Moment</h3>
+        <form id="daily-form">
+          <textarea id="daily-input" placeholder="What happened today? A moment, a thought, a small victory…" rows="3"></textarea>
+          <button type="submit" class="form-btn">Record Moment</button>
+        </form>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── JOURNAL ── -->
+  <section id="journal" class="section">
+    <div class="section-inner">
+      <h2 class="section-title" data-symbol="愛">Journal</h2>
+      <p class="section-intro">This space breathes with you. Every entry is a layer of the living record that is your journey.</p>
+
+      <!-- Mood indicator -->
+      <div id="mood-display" class="mood-display">
+        <span class="mood-label">Current Tone:</span>
+        <span id="mood-text" class="mood-text">Neutral</span>
+        <div id="mood-bar" class="mood-bar"><div id="mood-fill" class="mood-fill"></div></div>
+      </div>
+
+      <!-- New entry form -->
+      <div class="journal-form-wrap">
+        <form id="journal-form">
+          <input type="text" id="journal-title" placeholder="Entry title…" maxlength="100" />
+          <textarea id="journal-content" placeholder="Write freely. This space is yours alone…" rows="6"></textarea>
+          <div class="form-footer">
+            <label class="mood-select-label">Mood:
+              <select id="mood-select">
+                <option value="neutral">Neutral</option>
+                <option value="reflective">Reflective</option>
+                <option value="intense">Intense</option>
+                <option value="peaceful">Peaceful</option>
+                <option value="raw">Raw / Honest</option>
+                <option value="grateful">Grateful</option>
+                <option value="conflicted">Conflicted</option>
+              </select>
+            </label>
+            <button type="submit" class="form-btn">Commit to the Page</button>
+          </div>
+        </form>
+      </div>
+
+      <!-- Mood insights panel -->
+      <div id="mood-insights" class="mood-insights hidden">
+        <h3 class="insights-title">Patterns Emerging</h3>
+        <div id="insights-content" class="insights-content"></div>
+      </div>
+
+      <!-- Journal entries -->
+      <div id="journal-entries" class="journal-entries">
+        <!-- Populated by JS -->
+      </div>
+    </div>
+  </section>
+
+  <!-- ── FOOTER ── -->
+  <footer id="site-footer">
+    <div class="footer-symbols" aria-hidden="true">
+      <span>&#9765;</span>
+      <span>愛</span>
+      <span>WAR</span>
+    </div>
+    <p class="footer-text">This site is alive. It grows with you. — <em>Jermiah Tatum</em></p>
+    <p class="footer-sub">© <span id="footer-year"></span> · Built from the inside out</p>
+  </footer>
+
+  <script src="js/particles.js"></script>
+  <script src="js/journal.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>

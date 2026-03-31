@@ -1,0 +1,1123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Journey — The Cycle Protocol</title>
+  <style>
+    /* ============================================================
+       VARIABLES & RESET
+    ============================================================ */
+    :root {
+      --bg:       #08060e;
+      --bg2:      #0c0a16;
+      --bg3:      #10101e;
+      --border:   #1e1a2e;
+      --text:     #ede8f8;
+      --muted:    #8878a8;
+      --dim:      #4a4068;
+      --gold:     #f0b840;
+      --gold-lt:  #ffd060;
+      --blue:     #5bb8d4;
+      --green:    #4cd98a;
+      --red:      #e03030;
+      --coral:    #e8702a;
+      --purple:   #b89fd8;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { font-size: 15px; scroll-behavior: smooth; }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: var(--bg); }
+    ::-webkit-scrollbar-thumb { background: #2e2845; border-radius: 3px; }
+    ::-webkit-scrollbar-thumb:hover { background: #3e3860; }
+
+    /* ============================================================
+       HEADER — warm LA amber/gold gradient accent
+    ============================================================ */
+    #header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 13px 28px;
+      background: rgba(8,6,14,0.96);
+      border-bottom: 1px solid rgba(240,184,64,0.12);
+      position: sticky;
+      top: 0;
+      z-index: 200;
+      backdrop-filter: blur(14px);
+      gap: 12px;
+    }
+    .hd-logo h1 {
+      font-size: 22px;
+      font-weight: 900;
+      letter-spacing: .35em;
+      background: linear-gradient(130deg, #c47020, #f0b840, #ffd060, #e09030);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      line-height: 1;
+    }
+    .hd-logo p {
+      font-size: 9px;
+      letter-spacing: .25em;
+      color: var(--dim);
+      text-transform: uppercase;
+      margin-top: 3px;
+    }
+    .hd-identity { text-align: center; flex: 1; min-width: 0; }
+    #identity-title {
+      font-size: 17px;
+      font-weight: 800;
+      color: var(--gold);
+      letter-spacing: .08em;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    #identity-sub { font-size: 11px; color: var(--dim); margin-top: 2px; }
+
+    .hd-stability { text-align: right; min-width: 160px; }
+    .stab-label { font-size: 9px; letter-spacing: .2em; color: var(--dim); text-transform: uppercase; margin-bottom: 5px; }
+    .stab-bar { width: 160px; height: 5px; background: #0d0b18; border-radius: 3px; overflow: hidden; border: 1px solid var(--border); }
+    #stab-fill { height: 100%; background: linear-gradient(90deg,#c47020,#f0b840); border-radius: 3px; transition: width .6s ease, background .6s ease; }
+    #stab-score { font-size: 15px; font-weight: 700; color: var(--gold); margin-top: 3px; transition: color .4s; }
+
+    /* ============================================================
+       CITY CANVAS
+    ============================================================ */
+    .city-wrap { width: 100%; position: relative; background: #080510; overflow: hidden; }
+    #cityCanvas { display: block; width: 100%; }
+    .city-label-bar { display: flex; padding: 0 0 2px; background: rgba(8,5,16,0.95); border-bottom: 1px solid var(--border); }
+    .district-label {
+      flex: 1; text-align: center; font-size: 9px; letter-spacing: .18em;
+      text-transform: uppercase; color: var(--dim); padding: 5px 0;
+      border-right: 1px solid var(--border); transition: color .4s;
+    }
+    .district-label:last-child { border-right: none; }
+    .district-label.active { color: var(--gold); }
+
+    /* ============================================================
+       ORDERS SECTION
+    ============================================================ */
+    .orders-section { padding: 20px 20px 8px; background: var(--bg2); }
+    .orders-grid {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 14px;
+      max-width: 1500px;
+      margin: 0 auto;
+    }
+
+    /* ============================================================
+       ORDER CARD
+    ============================================================ */
+    .order-card {
+      background: var(--bg3);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 18px 16px;
+      position: relative;
+      overflow: hidden;
+      transition: border-color .3s, box-shadow .3s;
+    }
+    .order-card::before {
+      content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
+      background: var(--oc); opacity: .35; transition: opacity .3s;
+    }
+    .order-card.is-fasting { border-color: color-mix(in srgb, var(--oc) 50%, transparent); box-shadow: 0 0 28px color-mix(in srgb, var(--oc) 14%, transparent); }
+    .order-card.is-fasting::before { opacity: 1; animation: pulse-top 2s ease-in-out infinite; }
+    .order-card.is-recovery::before { opacity: .7; background: var(--green); }
+    @keyframes pulse-top { 0%,100%{ opacity:.5; } 50%{ opacity:1; } }
+
+    .oc-label { font-size: 9px; letter-spacing: .2em; text-transform: uppercase; color: var(--dim); margin-bottom: 3px; }
+    .oc-duration { font-size: 30px; font-weight: 900; color: var(--oc); line-height: 1; letter-spacing: -.02em; }
+
+    .rank-block { margin: 11px 0 10px; padding: 8px 10px; background: var(--bg); border-radius: 7px; border: 1px solid var(--border); }
+    .rank-name { font-size: 12px; font-weight: 700; color: var(--oc); }
+    .rank-cycles { font-size: 10px; color: var(--dim); margin-top: 2px; }
+
+    .phase-row { display: flex; align-items: center; gap: 7px; margin: 9px 0 5px; }
+    .phase-dot { width: 7px; height: 7px; border-radius: 50%; background: #2e2845; flex-shrink: 0; }
+    .phase-dot.fasting { background: var(--blue); box-shadow: 0 0 8px var(--blue); animation: pdot 1.5s ease-in-out infinite; }
+    .phase-dot.recovery { background: var(--green); box-shadow: 0 0 8px var(--green); animation: pdot 2s ease-in-out infinite; }
+    @keyframes pdot { 0%,100%{ opacity:.55; transform:scale(1); } 50%{ opacity:1; transform:scale(1.45); } }
+    .phase-text { font-size: 10px; letter-spacing: .15em; text-transform: uppercase; color: var(--dim); }
+    .phase-text.fasting { color: var(--blue); }
+    .phase-text.recovery { color: var(--green); }
+
+    .timer { font-family: 'Courier New', monospace; font-size: 21px; font-weight: 700; letter-spacing: .05em; color: var(--text); margin: 6px 0 5px; }
+    .timer.ready { color: var(--green); animation: timer-glow 1.5s ease-in-out infinite; }
+    .timer.idle { color: var(--border); }
+    @keyframes timer-glow { 0%,100%{ text-shadow:none; } 50%{ text-shadow:0 0 14px var(--green); } }
+
+    .prog-bar { height: 3px; background: var(--bg); border-radius: 2px; overflow: hidden; margin-bottom: 10px; }
+    .prog-fill { height: 100%; background: var(--oc); border-radius: 2px; transition: width 1s linear; }
+
+    .stats-row { display: flex; margin: 8px 0; border: 1px solid var(--border); border-radius: 7px; overflow: hidden; background: var(--bg); }
+    .stat { flex: 1; text-align: center; padding: 7px 4px; border-right: 1px solid var(--border); }
+    .stat:last-child { border-right: none; }
+    .stat-val { font-size: 19px; font-weight: 800; color: var(--text); line-height: 1; }
+    .stat.cracks .stat-val { color: var(--red); }
+    .stat-lbl { font-size: 9px; text-transform: uppercase; letter-spacing: .1em; color: var(--dim); margin-top: 2px; }
+
+    .mastery-badge { font-size: 10px; color: var(--gold); background: rgba(240,184,64,.07); border: 1px solid rgba(240,184,64,.18); border-radius: 5px; padding: 4px 8px; margin: 7px 0; display: none; }
+    .mastery-badge.visible { display: block; }
+
+    .actions { display: flex; gap: 7px; margin-top: 11px; flex-wrap: wrap; }
+    .btn { flex: 1; min-width: 70px; padding: 8px 10px; border: 1px solid transparent; border-radius: 7px; font-size: 10px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; cursor: pointer; transition: all .2s; line-height: 1.2; }
+    .btn:hover { transform: translateY(-1px); }
+    .btn:active { transform: translateY(0); filter: brightness(1.2); }
+
+    .btn-start { background: linear-gradient(135deg,#0e1c38,#163060); color: #70a8f0; border-color: #163060; }
+    .btn-start:hover { background: linear-gradient(135deg,#163060,#2050a0); color: #a0c8ff; }
+
+    .btn-seal { background: linear-gradient(135deg,#0a2010,#1a4428); color: #55aa70; border-color: #1a4428; }
+    .btn-seal.ready { background: linear-gradient(135deg,#185028,#2a8845); color: #70e090; border-color: #2a8845; animation: btn-glow-g 2s ease-in-out infinite; }
+    .btn-seal.locked { background: linear-gradient(135deg,#280808,#4e1010); color: #cc5050; border-color: #4e1010; }
+    @keyframes btn-glow-g { 0%,100%{ box-shadow:none; } 50%{ box-shadow:0 0 14px rgba(76,217,138,.45); } }
+
+    .btn-void { background: linear-gradient(135deg,#1e0808,#381010); color: #aa3838; border-color: #381010; }
+    .btn-void:hover { background: linear-gradient(135deg,#381010,#681818); color: #dd5050; }
+
+    .btn-recovery { background: linear-gradient(135deg,#081808,#102010); color: #3a7040; border-color: #102010; }
+    .btn-recovery:hover { background: linear-gradient(135deg,#102010,#203020); color: #60a068; }
+
+    /* ============================================================
+       CHRONICLE
+    ============================================================ */
+    .chronicle-section { padding: 22px; background: var(--bg); border-top: 1px solid var(--border); }
+    .chron-header { display: flex; align-items: center; justify-content: space-between; max-width: 1500px; margin: 0 auto 14px; }
+    .chron-header h2 { font-size: 13px; font-weight: 700; letter-spacing: .22em; text-transform: uppercase; color: var(--muted); }
+    .chron-count { font-size: 11px; color: var(--dim); }
+    .chron-log { max-width: 1500px; margin: 0 auto; max-height: 300px; overflow-y: auto; border: 1px solid var(--border); border-radius: 10px; background: var(--bg2); }
+    .chron-entry { display: flex; gap: 12px; padding: 11px 16px; border-bottom: 1px solid #12101e; transition: background .2s; }
+    .chron-entry:hover { background: var(--bg3); }
+    .chron-entry:last-child { border-bottom: none; }
+    .chron-icon { font-size: 15px; width: 22px; flex-shrink: 0; padding-top: 1px; text-align: center; }
+    .chron-body { flex: 1; min-width: 0; }
+    .chron-title { font-size: 11px; font-weight: 700; letter-spacing: .06em; }
+    .chron-text { font-size: 12px; color: #b0a8c8; margin-top: 2px; line-height: 1.4; }
+    .chron-time { font-size: 9px; color: var(--dim); margin-top: 3px; }
+    .chron-empty { padding: 36px; text-align: center; color: var(--dim); font-style: italic; font-size: 13px; }
+
+    /* ============================================================
+       NOTIFICATIONS
+    ============================================================ */
+    .notif { position: fixed; top: 76px; left: 50%; transform: translateX(-50%); z-index: 999; padding: 13px 24px; border-radius: 10px; font-size: 13px; font-weight: 700; letter-spacing: .08em; text-align: center; pointer-events: none; animation: notif-in .3s ease; }
+    .notif-crack { background: #200808; border: 1px solid #c03020; color: #ff7060; max-width: 380px; }
+    .notif-milestone { background: #1a1200; border: 1px solid var(--gold); color: var(--gold-lt); max-width: 440px; }
+    .notif-milestone .nm-sub { font-size: 11px; font-weight: 400; color: rgba(255,208,96,.65); margin-top: 5px; }
+    @keyframes notif-in { from{ opacity:0; transform:translateX(-50%) translateY(-10px) scale(.93); } to{ opacity:1; transform:translateX(-50%) translateY(0) scale(1); } }
+
+    /* ============================================================
+       FOOTER
+    ============================================================ */
+    footer { text-align: center; padding: 16px; font-size: 10px; color: var(--dim); letter-spacing: .15em; border-top: 1px solid var(--border); background: var(--bg); }
+
+    /* ============================================================
+       RESPONSIVE
+    ============================================================ */
+    @media (max-width: 1100px) { .orders-grid { grid-template-columns: repeat(3,1fr); } }
+    @media (max-width: 680px)  { .orders-grid { grid-template-columns: repeat(2,1fr); } .hd-identity { display:none; } }
+    @media (max-width: 440px)  { .orders-grid { grid-template-columns:1fr; } .hd-stability { min-width:unset; } .stab-bar { width:130px; } }
+  </style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header id="header">
+  <div class="hd-logo">
+    <h1>JOURNEY</h1>
+    <p>The Cycle Protocol</p>
+  </div>
+  <div class="hd-identity">
+    <div id="identity-title">The Uninitiated</div>
+    <div id="identity-sub">No cycles sealed. The city awaits.</div>
+  </div>
+  <div class="hd-stability">
+    <div class="stab-label">City Stability</div>
+    <div class="stab-bar"><div id="stab-fill" style="width:100%"></div></div>
+    <div id="stab-score">100%</div>
+  </div>
+</header>
+
+<!-- CITY CANVAS -->
+<div class="city-wrap">
+  <canvas id="cityCanvas"></canvas>
+</div>
+<div class="city-label-bar" id="districtLabels"></div>
+
+<!-- ORDERS -->
+<section class="orders-section">
+  <div class="orders-grid" id="ordersGrid"></div>
+</section>
+
+<!-- CHRONICLE -->
+<section class="chronicle-section">
+  <div class="chron-header">
+    <h2>Chronicle</h2>
+    <span class="chron-count" id="chronCount">0 entries</span>
+  </div>
+  <div class="chron-log" id="chronLog">
+    <div class="chron-empty">The chronicle awaits your first cycle…</div>
+  </div>
+</section>
+
+<footer>JOURNEY — THE CYCLE PROTOCOL &nbsp;·&nbsp; Return to control, again and again, over time.</footer>
+
+<script>
+'use strict';
+
+/* ============================================================
+   ORDERS — warm LA palette
+============================================================ */
+const ORDERS = [
+  { id:'12h',  dur:12,  label:'12H',  district:'THE QUARTER',  color:'#c49a6c', rgb:'196,154,108' },
+  { id:'24h',  dur:24,  label:'24H',  district:'THE WARD',     color:'#5bb8d4', rgb:'91,184,212'  },
+  { id:'48h',  dur:48,  label:'48H',  district:'THE DISTRICT', color:'#d4814a', rgb:'212,129,74'  },
+  { id:'72h',  dur:72,  label:'72H',  district:'THE SECTOR',   color:'#b89fd8', rgb:'184,159,216' },
+  { id:'144h', dur:144, label:'144H', district:'THE CITADEL',  color:'#f0b840', rgb:'240,184,64'  },
+];
+
+/* ============================================================
+   LORE
+============================================================ */
+const LORE = {
+  start: [
+    'The foundation stones are set. The fast begins beneath the California sun.',
+    'Silence descends. The city watches and waits.',
+    'Another cycle opens. The architects record it in warm stone.',
+    'The district stirs. Phase locked. The tower ascends the skyline.',
+    'Control assumes its position. The city holds its breath.',
+    'The builders raise their tools. Time begins its measure.',
+    'A gate opens to the void. The fast holds it shut.',
+    'Phase engaged. The skyline leans into the golden hour.',
+  ],
+  seal: [
+    'The cycle closes. Another floor rises toward the LA sun.',
+    'Discipline honored. The city grows skyward.',
+    'Sealed and complete. The pattern holds.',
+    'The tower claims another level. The architects record the ascent.',
+    'A cycle returned to the record. One more floor claimed.',
+    'The seal is set. Structure solidifies against the dusk.',
+    'Completion claimed. The city etches another floor into the hillside.',
+    'The fast is honored. The building stands taller than yesterday.',
+  ],
+  void: [
+    'A fracture appears. The cycle breaks and the district absorbs the damage.',
+    'Structural damage recorded. The crack runs deep into the warm concrete.',
+    'The void is accepted. Red lines mark the failure in the facade.',
+    'Failure logged. The fissure will remain in the stone forever.',
+    'The discipline falters. Cracks split the stucco facade.',
+    'A fissure opens. This too is part of the permanent record.',
+    'The cycle breaks. The city endures the Santa Ana winds of failure.',
+    'Voided. The fracture lines are now permanent architecture.',
+  ],
+  early: [
+    'Phase-lock violated. Structural damage recorded in the foundation.',
+    'The seal is rejected — the phase is not complete. Crack logged.',
+    'Early breach noted. The tower fractures at its sun-baked base.',
+    'The architects refuse the seal. Structural integrity suffers.',
+    'Cannot seal — the vigil is unfinished. The crack is permanent.',
+    'Phase incomplete. The building records the attempt as structural damage.',
+  ],
+  rankUp: {
+    3: [
+      'Third Gate achieved. The pattern is no longer accident.',
+      'Three times returned. The district recognizes your name.',
+      'Third Gate: first proof of repetition. The city etches it in gold.',
+      'The gate opens at three. You have proven you can return.',
+    ],
+    6: [
+      'Sixth Path — the spire breaks the LA skyline.',
+      'Six cycles mastered. A spire crowns the tower above the smog line.',
+      'The Sixth Path is real. Structure solidifies into the golden skyline.',
+      'At six, the spire rises above the Hollywood Hills.',
+    ],
+    9: [
+      'Ninth Seal set. The crown burns gold over the basin forever.',
+      'Nine cycles. The building is complete. You are complete.',
+      'The Ninth Seal is permanent. The crown glows for all of Los Angeles.',
+      'Nine returns. Discipline internalized. The city belongs to you.',
+    ],
+  },
+  special144: 'Sovereign Architect — The Metropolis is complete. You are the city.',
+  recovery: [
+    'The district rests beneath the LA moon. The builders await.',
+    'Recovery phase ends. The district stands ready for the next ascent.',
+    'Stillness returns to the canyon. The city prepares.',
+  ],
+};
+
+function pickLore(pool) { return pool[Math.floor(Math.random() * pool.length)]; }
+
+/* ============================================================
+   RANK TIERS
+============================================================ */
+const RANKS = [
+  { min:9, name:'Ninth Seal',  sym:'◉', tier:9 },
+  { min:6, name:'Sixth Path',  sym:'◈', tier:6 },
+  { min:3, name:'Third Gate',  sym:'◇', tier:3 },
+  { min:1, name:'Initiate',    sym:'○', tier:1 },
+  { min:0, name:'Dormant',     sym:'·', tier:0 },
+];
+function getRank(cycles) { return RANKS.find(r => cycles >= r.min) || RANKS[RANKS.length-1]; }
+
+/* ============================================================
+   STATE
+============================================================ */
+const SK = 'journey_v2';
+let state = { orders:{}, chronicle:[], totalCycles:0, totalCracks:0 };
+
+function freshOrder() { return { cycles:0, cracks:0, phase:'idle', phaseStart:null, phaseEnd:null }; }
+
+function initState() {
+  try {
+    const raw = localStorage.getItem(SK);
+    if (raw) {
+      state = JSON.parse(raw);
+      ORDERS.forEach(o => { if (!state.orders[o.id]) state.orders[o.id] = freshOrder(); });
+      return;
+    }
+  } catch(err) {
+    console.warn('[Journey] Failed to restore saved state — starting fresh.', err);
+  }
+  state = { orders:{}, chronicle:[], totalCycles:0, totalCracks:0 };
+  ORDERS.forEach(o => { state.orders[o.id] = freshOrder(); });
+}
+function saveState() { try { localStorage.setItem(SK, JSON.stringify(state)); } catch(err) { console.warn('[Journey] Could not persist state.', err); } }
+
+/* ============================================================
+   CALCULATIONS
+============================================================ */
+function getMasteryBonus(orderId) {
+  const idx = ORDERS.findIndex(o => o.id === orderId);
+  if (idx <= 0) return 0;
+  let bonus = 0;
+  for (let i = 0; i < idx; i++) bonus += state.orders[ORDERS[i].id].cycles * (idx - i) * 0.5;
+  return Math.round(bonus * 10) / 10;
+}
+
+function getStability() {
+  const total = state.totalCycles + state.totalCracks;
+  return total === 0 ? 100 : Math.round((state.totalCycles / total) * 100);
+}
+
+function getIdentity() {
+  let best = { tier:0, dur:0, orderId:null, cycles:0 };
+  ORDERS.forEach(o => {
+    const r = getRank(state.orders[o.id].cycles);
+    if (r.tier > best.tier || (r.tier === best.tier && o.dur > best.dur))
+      best = { tier:r.tier, dur:o.dur, orderId:o.id, cycles:state.orders[o.id].cycles };
+  });
+  if (!best.orderId || best.tier === 0) return { title:'The Uninitiated', sub:'No cycles sealed. The city awaits.' };
+  if (best.tier === 9 && best.orderId === '144h') return { title:'Sovereign Architect', sub:LORE.special144 };
+  const oLabel = ORDERS.find(o => o.id === best.orderId).label;
+  const rank   = getRank(best.cycles);
+  if (best.tier === 9) return { title:`${rank.name} — ${oLabel}`, sub:`Nine cycles of ${best.dur}h. The crown burns.` };
+  if (best.tier === 6) return { title:`${rank.name} — ${oLabel}`, sub:`Six cycles of ${best.dur}h. The spire rises.` };
+  if (best.tier === 3) return { title:`${rank.name} — ${oLabel}`, sub:`Third Gate of ${best.dur}h. First proof of repetition.` };
+  return { title:`Initiate — ${oLabel}`, sub:`${best.cycles} cycle${best.cycles!==1?'s':''} sealed.` };
+}
+
+function getProgress(orderId) {
+  const os = state.orders[orderId];
+  if (os.phase !== 'fasting' || !os.phaseStart || !os.phaseEnd) return 0;
+  return Math.min(1, (Date.now() - os.phaseStart) / (os.phaseEnd - os.phaseStart));
+}
+function getRemaining(orderId) {
+  const os = state.orders[orderId];
+  return os.phaseEnd ? Math.max(0, os.phaseEnd - Date.now()) : 0;
+}
+function isComplete(orderId) {
+  const os = state.orders[orderId];
+  return os.phase === 'fasting' && os.phaseEnd && Date.now() >= os.phaseEnd;
+}
+function fmtMs(ms) {
+  if (ms <= 0) return '00:00:00';
+  const s = Math.floor(ms/1000), h = Math.floor(s/3600), m = Math.floor((s%3600)/60), sec = s%60;
+  return `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(sec).padStart(2,'0')}`;
+}
+function fmtNow() {
+  return new Date().toLocaleString('en-US',{month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'});
+}
+
+/* ============================================================
+   CHRONICLE
+============================================================ */
+function chronicle(icon, title, text, orderId) {
+  const o = ORDERS.find(x => x.id === orderId);
+  state.chronicle.unshift({ icon, title, text, color:o.color, ts:fmtNow() });
+  if (state.chronicle.length > 120) state.chronicle.length = 120;
+}
+
+/* ============================================================
+   ACTIONS
+============================================================ */
+function startFasting(orderId) {
+  const os = state.orders[orderId];
+  if (os.phase !== 'idle') return;
+  const o = ORDERS.find(x => x.id === orderId);
+  os.phase = 'fasting'; os.phaseStart = Date.now(); os.phaseEnd = Date.now() + o.dur * 3600000;
+  chronicle('▶', `${o.district}: Vigil commenced.`, pickLore(LORE.start), orderId);
+  saveState(); fullRender();
+}
+
+function sealCycle(orderId) {
+  const os = state.orders[orderId];
+  if (os.phase !== 'fasting') return;
+  const o = ORDERS.find(x => x.id === orderId), now = Date.now();
+  if (now < os.phaseEnd) {
+    os.cracks++; state.totalCracks++;
+    chronicle('⚡',`${o.district}: Phase-lock violated — early seal rejected.`, pickLore(LORE.early), orderId);
+    showNotif('crack','⚑ Phase incomplete — structural damage recorded');
+    saveState(); fullRender(); return;
+  }
+  const prevRank = getRank(os.cycles);
+  os.cycles++; state.totalCycles++;
+  const newRank = getRank(os.cycles);
+  os.phase = 'recovery'; os.phaseStart = now; os.phaseEnd = now + o.dur * 3600000;
+  let loreText = pickLore(LORE.seal);
+  if (newRank.tier > prevRank.tier) {
+    const pool = LORE.rankUp[newRank.tier];
+    if (pool) loreText = pickLore(pool);
+    if (orderId === '144h' && newRank.tier === 9) loreText = LORE.special144;
+    showNotif('milestone', `${newRank.sym} ${newRank.name} — ${o.label}`, loreText);
+    chronicle('🏛',`${o.district}: ${newRank.name} achieved.`, loreText, orderId);
+  } else {
+    chronicle('◆',`${o.district}: Cycle ${os.cycles} sealed.`, loreText, orderId);
+  }
+  saveState(); fullRender();
+}
+
+function voidCycle(orderId) {
+  const os = state.orders[orderId];
+  if (os.phase !== 'fasting') return;
+  const o = ORDERS.find(x => x.id === orderId);
+  os.cracks++; state.totalCracks++;
+  os.phase = 'idle'; os.phaseStart = null; os.phaseEnd = null;
+  chronicle('⚑',`${o.district}: Cycle voided.`, pickLore(LORE.void), orderId);
+  showNotif('crack','⚑ Cycle voided — crack recorded in the stone');
+  saveState(); fullRender();
+}
+
+function endRecovery(orderId) {
+  const os = state.orders[orderId];
+  if (os.phase !== 'recovery') return;
+  const o = ORDERS.find(x => x.id === orderId);
+  os.phase = 'idle'; os.phaseStart = null; os.phaseEnd = null;
+  chronicle('◎',`${o.district}: Recovery complete.`, pickLore(LORE.recovery), orderId);
+  saveState(); fullRender();
+}
+
+/* ============================================================
+   NOTIFICATIONS
+============================================================ */
+function showNotif(type, line1, line2) {
+  document.querySelectorAll('.notif').forEach(n => n.remove());
+  const el = document.createElement('div');
+  el.className = `notif notif-${type}`;
+  el.innerHTML = type === 'milestone'
+    ? `<div>${line1}</div>${line2?`<div class="nm-sub">${line2}</div>`:''}`
+    : line1;
+  document.body.appendChild(el);
+  setTimeout(() => el.remove(), type === 'milestone' ? 5500 : 3200);
+}
+
+/* ============================================================
+   CANVAS — LA SKYLINE
+============================================================ */
+const canvas = document.getElementById('cityCanvas');
+const ctx    = canvas.getContext('2d');
+let stars = [], frame = 0;
+
+/* -- seed-based PRNG for consistent procedural details -- */
+function seededRand(seed) {
+  let current = seed;
+  return function() { current = (current * 9301 + 49297) % 233280; return current / 233280; };
+}
+
+function resizeCanvas() {
+  const W = canvas.offsetWidth || window.innerWidth;
+  // Clamp canvas height: min 300px, max 480px, responsive to width
+  const H = Math.round(Math.max(300, Math.min(480, W * 0.3 + 80)));
+  canvas.width = W; canvas.height = H;
+}
+
+function genStars() {
+  stars = [];
+  const n = Math.floor(canvas.width * canvas.height / 3200);
+  for (let i = 0; i < n; i++) {
+    stars.push({
+      x: Math.random() * canvas.width,
+      y: Math.random() * canvas.height * 0.55, // stars only in upper sky, not behind hills
+      r: Math.random() * 1.2 + 0.3,
+      b: Math.random() * 0.6 + 0.2,
+      s: Math.random() * Math.PI * 2,
+    });
+  }
+}
+
+/* -- helpers -- */
+function rgba(hex, a) {
+  const r = parseInt(hex.slice(1,3),16), g = parseInt(hex.slice(3,5),16), b = parseInt(hex.slice(5,7),16);
+  return `rgba(${r},${g},${b},${a})`;
+}
+
+/* ---- PALM TREE ---- */
+function drawPalm(cx, groundY, h, frame, lean) {
+  const lx = lean || 0; // lean px at top
+  // Trunk — slightly curved
+  ctx.beginPath();
+  ctx.moveTo(cx, groundY);
+  ctx.bezierCurveTo(cx + lx*0.3, groundY - h*0.35, cx + lx*0.7, groundY - h*0.65, cx + lx, groundY - h);
+  ctx.strokeStyle = '#3e2810'; ctx.lineWidth = 4; ctx.stroke();
+  // Inner trunk highlight
+  ctx.beginPath();
+  ctx.moveTo(cx + 1, groundY);
+  ctx.bezierCurveTo(cx+lx*0.3+1, groundY-h*0.35, cx+lx*0.7+1, groundY-h*0.65, cx+lx+1, groundY-h);
+  ctx.strokeStyle = 'rgba(90,55,20,0.5)'; ctx.lineWidth = 2; ctx.stroke();
+
+  const tx = cx + lx, ty = groundY - h;
+  // Fronds (fan of curved lines)
+  const frondAngles = [-75,-52,-32,-12,8,28,50,75,100];
+  frondAngles.forEach((ang, fi) => {
+    const rad = (ang - 90) * Math.PI / 180;
+    const flen = h * (0.26 + (fi===4?0.04:0));
+    const sway = Math.sin(frame * 0.025 + fi * 0.8) * 3;
+    const fx = tx + Math.cos(rad) * flen + sway;
+    const fy = ty + Math.sin(rad) * flen + Math.abs(sway)*0.5;
+    const cpx = tx + Math.cos(rad) * flen * 0.55 + sway*0.3;
+    const cpy = ty + Math.sin(rad) * flen * 0.55 + flen * 0.18;
+    ctx.beginPath(); ctx.moveTo(tx, ty);
+    ctx.quadraticCurveTo(cpx, cpy, fx, fy);
+    const green = `rgba(${30+fi*3},${80+fi*4},${20+fi*2},0.9)`;
+    ctx.strokeStyle = green; ctx.lineWidth = 2; ctx.stroke();
+  });
+  // Crown tuft
+  ctx.beginPath(); ctx.arc(tx, ty, 3, 0, Math.PI*2);
+  ctx.fillStyle = '#2d5a18'; ctx.fill();
+}
+
+/* ---- HOLLYWOOD HILLS ---- */
+function drawHills(W, groundY) {
+  // Far ridge (lighter, atmospheric purple/blue haze)
+  ctx.beginPath();
+  ctx.moveTo(0, groundY);
+  const far = [
+    [0, groundY*0.68],[W*0.06,groundY*0.62],[W*0.14,groundY*0.70],[W*0.22,groundY*0.58],
+    [W*0.31,groundY*0.66],[W*0.40,groundY*0.52],[W*0.50,groundY*0.61],[W*0.60,groundY*0.55],
+    [W*0.70,groundY*0.64],[W*0.80,groundY*0.57],[W*0.90,groundY*0.67],[W,groundY*0.72],
+  ];
+  ctx.moveTo(far[0][0], far[0][1]);
+  for (let i = 1; i < far.length-1; i++) {
+    const mx = (far[i][0]+far[i+1][0])/2, my = (far[i][1]+far[i+1][1])/2;
+    ctx.quadraticCurveTo(far[i][0], far[i][1], mx, my);
+  }
+  ctx.lineTo(W, groundY); ctx.lineTo(0, groundY); ctx.closePath();
+  const farGrad = ctx.createLinearGradient(0, groundY*0.52, 0, groundY);
+  farGrad.addColorStop(0, 'rgba(30,16,50,0.85)');
+  farGrad.addColorStop(1, 'rgba(18,10,32,0.95)');
+  ctx.fillStyle = farGrad; ctx.fill();
+
+  // Mid ridge (darker, closer)
+  ctx.beginPath();
+  const mid = [
+    [0,groundY*0.78],[W*0.05,groundY*0.74],[W*0.12,groundY*0.80],[W*0.20,groundY*0.72],
+    [W*0.28,groundY*0.78],[W*0.35,groundY*0.70],[W*0.44,groundY*0.76],[W*0.54,groundY*0.71],
+    [W*0.63,groundY*0.77],[W*0.72,groundY*0.72],[W*0.82,groundY*0.78],[W*0.92,groundY*0.74],
+    [W,groundY*0.79],
+  ];
+  ctx.moveTo(mid[0][0], mid[0][1]);
+  for (let i = 1; i < mid.length-1; i++) {
+    const mx = (mid[i][0]+mid[i+1][0])/2, my = (mid[i][1]+mid[i+1][1])/2;
+    ctx.quadraticCurveTo(mid[i][0], mid[i][1], mx, my);
+  }
+  ctx.lineTo(W, groundY); ctx.lineTo(0, groundY); ctx.closePath();
+  ctx.fillStyle = 'rgba(12,8,22,0.95)'; ctx.fill();
+}
+
+/* ---- MAIN DRAW ---- */
+function drawCity() {
+  frame++;
+  const W = canvas.width, H = canvas.height;
+  const groundY = Math.round(H * 0.80);
+  ctx.clearRect(0,0,W,H);
+
+  /* -- LA DUSK SKY -- */
+  const sky = ctx.createLinearGradient(0,0,0,groundY);
+  sky.addColorStop(0,    '#0d0620');  // deep violet zenith
+  sky.addColorStop(0.20, '#250a3e');  // rich purple
+  sky.addColorStop(0.45, '#7a1e4a');  // magenta belt
+  sky.addColorStop(0.65, '#c0401e');  // deep coral/red
+  sky.addColorStop(0.80, '#e07020');  // burnt orange
+  sky.addColorStop(0.92, '#e89a28');  // warm amber
+  sky.addColorStop(1,    '#c07818');  // golden haze at horizon
+  ctx.fillStyle = sky; ctx.fillRect(0,0,W,groundY+2);
+
+  /* -- Horizon glow (LA heat shimmer) -- */
+  const haze = ctx.createLinearGradient(0, groundY*0.82, 0, groundY);
+  haze.addColorStop(0, 'rgba(240,160,50,0)');
+  haze.addColorStop(1, 'rgba(240,160,50,0.18)');
+  ctx.fillStyle = haze; ctx.fillRect(0, groundY*0.82, W, groundY*0.18+2);
+
+  /* -- Sunset sun glow on horizon -- */
+  const sunX = W * 0.72;
+  const sunGlow = ctx.createRadialGradient(sunX, groundY, 0, sunX, groundY, W*0.4);
+  sunGlow.addColorStop(0,   'rgba(255,200,80,0.32)');
+  sunGlow.addColorStop(0.3, 'rgba(240,120,30,0.14)');
+  sunGlow.addColorStop(1,   'transparent');
+  ctx.fillStyle = sunGlow; ctx.fillRect(0,0,W,groundY+4);
+
+  /* -- Stars (faint, dusk-emerging) -- */
+  stars.forEach(st => {
+    const tw = 0.5 + 0.5 * Math.sin(frame*0.016 + st.s);
+    ctx.beginPath(); ctx.arc(st.x, st.y, st.r, 0, Math.PI*2);
+    ctx.fillStyle = `rgba(255,230,200,${st.b * tw * 0.7})`; ctx.fill();
+  });
+
+  /* -- First star / Venus -- */
+  const vs = 1 + 0.3*Math.sin(frame*0.04);
+  ctx.beginPath(); ctx.arc(W*0.18, H*0.08, vs*2, 0, Math.PI*2);
+  ctx.fillStyle = 'rgba(255,240,180,0.9)'; ctx.fill();
+  const vg = ctx.createRadialGradient(W*0.18, H*0.08, 0, W*0.18, H*0.08, vs*7);
+  vg.addColorStop(0,'rgba(255,240,180,0.4)'); vg.addColorStop(1,'transparent');
+  ctx.fillStyle=vg; ctx.beginPath(); ctx.arc(W*0.18,H*0.08,vs*7,0,Math.PI*2); ctx.fill();
+
+  /* -- Hollywood Hills -- */
+  drawHills(W, groundY);
+
+  /* -- Ground / street level -- */
+  const grd = ctx.createLinearGradient(0,groundY,0,H);
+  grd.addColorStop(0,'#1a0e08'); grd.addColorStop(0.5,'#100808'); grd.addColorStop(1,'#060404');
+  ctx.fillStyle=grd; ctx.fillRect(0,groundY,W,H-groundY);
+
+  /* -- Street glow (city lights reflecting on asphalt) -- */
+  const sg = ctx.createLinearGradient(0,groundY,0,groundY+30);
+  sg.addColorStop(0,'rgba(220,120,40,0.22)'); sg.addColorStop(1,'transparent');
+  ctx.fillStyle=sg; ctx.fillRect(0,groundY,W,30);
+
+  /* -- Ground line -- */
+  ctx.beginPath(); ctx.moveTo(0,groundY); ctx.lineTo(W,groundY);
+  ctx.strokeStyle='rgba(200,100,30,0.35)'; ctx.lineWidth=1; ctx.stroke();
+
+  /* -- Distant city silhouette (further depth) -- */
+  const rng = seededRand(42);
+  for (let i=0; i<50; i++) {
+    const bx = (i/50)*W, bw = W/50 + 1;
+    const bh = 8 + rng()*16 + Math.sin(i*0.9)*6;
+    ctx.fillStyle = 'rgba(15,8,20,0.7)';
+    ctx.fillRect(bx, groundY-bh, bw, bh);
+    // Lit windows on distant buildings
+    if (rng() > 0.6) {
+      ctx.fillStyle = `rgba(255,${160+Math.floor(rng()*60)},${30+Math.floor(rng()*40)},0.4)`;
+      ctx.fillRect(bx+2, groundY-bh+3, 2, 2);
+    }
+  }
+
+  /* -- District dividers -- */
+  const dw = W/5;
+  for (let i=1; i<5; i++) {
+    ctx.beginPath(); ctx.moveTo(i*dw, groundY-15); ctx.lineTo(i*dw,H);
+    ctx.strokeStyle='rgba(15,8,20,0.8)'; ctx.lineWidth=1; ctx.stroke();
+  }
+
+  /* -- Draw each district -- */
+  ORDERS.forEach((o,i) => drawDistrict(o, state.orders[o.id], i*dw, dw, groundY, H));
+
+  /* -- Palm trees scattered across the scene -- */
+  const palmData = [
+    { x:dw*0.08, h:55, lean:-8 },   { x:dw*0.92, h:48, lean:6 },
+    { x:dw*1.12, h:60, lean:-6 },   { x:dw*1.88, h:52, lean:8 },
+    { x:dw*2.06, h:58, lean:-5 },   { x:dw*2.94, h:50, lean:7 },
+    { x:dw*3.10, h:62, lean:-9 },   { x:dw*3.90, h:45, lean:5 },
+    { x:dw*4.08, h:56, lean:-7 },   { x:dw*4.92, h:54, lean:6 },
+  ];
+  palmData.forEach(p => drawPalm(p.x, groundY, p.h, frame, p.lean));
+
+  /* -- Update district label colors -- */
+  const lbls = document.querySelectorAll('.district-label');
+  ORDERS.forEach((o,i) => {
+    if (!lbls[i]) return;
+    const active = state.orders[o.id].phase === 'fasting';
+    lbls[i].classList.toggle('active', active);
+    lbls[i].style.color = active ? o.color : '';
+  });
+}
+
+/* ============================================================
+   DISTRICT DRAWING
+============================================================ */
+function drawDistrict(o, os, x, dw, groundY, H) {
+  const cycles = os.cycles, cracks = os.cracks;
+  const active = os.phase === 'fasting';
+  const cx = x + dw/2;
+
+  // Active fasting glow (warm amber pulse)
+  if (active) {
+    const pulse = 0.25 + 0.15*Math.sin(frame*0.05);
+    const ag = ctx.createRadialGradient(cx, groundY, 0, cx, groundY, dw*0.6);
+    ag.addColorStop(0, rgba(o.color, pulse*0.6)); ag.addColorStop(1,'transparent');
+    ctx.fillStyle=ag; ctx.fillRect(x, groundY-130, dw, 165);
+  }
+
+  switch(o.id) {
+    case '12h':  drawQuarter(o, os, x, dw, groundY, cx, cycles, cracks, active); break;
+    case '24h':  drawWard(o, os, x, dw, groundY, cx, cycles, cracks, active); break;
+    case '48h':  drawDistrict48(o, os, x, dw, groundY, cx, cycles, cracks, active); break;
+    case '72h':  drawSector(o, os, x, dw, groundY, cx, cycles, cracks, active); break;
+    case '144h': drawCitadel(o, os, x, dw, groundY, cx, cycles, cracks, active); break;
+  }
+}
+
+/* ---- Shared helpers ---- */
+function bldH(cycles, base, pf) { return base + Math.min(cycles,12)*pf; }
+
+function drawBuilding(bx, by, bw, bh, g1, g2, color, cycles, cracks, seed, accent) {
+  ctx.save();
+  ctx.beginPath(); ctx.rect(bx,by,bw,bh); ctx.clip();
+  const bg = ctx.createLinearGradient(bx,by,bx+bw,by+bh);
+  bg.addColorStop(0,g1); bg.addColorStop(1,g2);
+  ctx.fillStyle=bg; ctx.fillRect(bx,by,bw,bh);
+  if (cycles > 0) drawWindows(bx,by,bw,bh,color,accent||color,seed);
+  if (cracks > 0) drawCracks(bx,by,bw,bh,cracks,seed);
+  ctx.restore();
+  ctx.strokeStyle = rgba(color,0.28); ctx.lineWidth=1; ctx.strokeRect(bx,by,bw,bh);
+}
+
+function drawWindows(bx,by,bw,bh,color,accent,seed) {
+  const ww=3, wh=3, hg=7, vg=7;
+  const cols=Math.floor((bw-hg)/(ww+hg)), rows=Math.floor((bh-vg)/(wh+vg));
+  if (cols<=0||rows<=0) return;
+  const xs = bx+(bw-cols*(ww+hg)+hg)/2;
+  const r=parseInt(color.slice(1,3),16), g=parseInt(color.slice(3,5),16), b=parseInt(color.slice(5,7),16);
+  // warm sunset tint for lit windows
+  for (let row=0; row<rows; row++) {
+    for (let col=0; col<cols; col++) {
+      const lit = ((seed*7+row*31+col*17)%4)!==0;
+      const wx=xs+col*(ww+hg), wy=by+vg+row*(wh+vg);
+      if (lit) {
+        // Mix building color with warm amber glow
+        ctx.fillStyle=`rgba(${Math.min(255,r+60)},${Math.min(255,g+40)},${Math.min(255,b+10)},0.8)`;
+      } else {
+        ctx.fillStyle='rgba(0,0,0,0.65)';
+      }
+      ctx.fillRect(wx,wy,ww,wh);
+    }
+  }
+}
+
+function drawCracks(bx,by,bw,bh,numCracks,seed) {
+  for (let i=0; i<numCracks; i++) {
+    let cx2=bx+2+((seed*13+i*37)%(bw-4)), cy2=by+4+((seed*7+i*23)%(bh*0.35));
+    ctx.beginPath(); ctx.moveTo(cx2,cy2);
+    for (let seg=0; seg<5+(i%4); seg++) {
+      cx2+=((seed*11+i*29+seg*17)%18)-7; cy2+=((seed*17+i*13+seg*31)%14)+5;
+      ctx.lineTo(cx2,cy2);
+    }
+    ctx.strokeStyle='#d02828'; ctx.lineWidth=1.5; ctx.globalAlpha=0.85; ctx.stroke();
+    const bx2=cx2+((seed+i*7)%14)-6, by2=cy2+((seed*3+i)%18)+6;
+    ctx.beginPath(); ctx.moveTo(cx2,cy2); ctx.lineTo(bx2,by2);
+    ctx.lineWidth=0.7; ctx.globalAlpha=0.45; ctx.stroke();
+    ctx.globalAlpha=1;
+  }
+}
+
+function drawSpire(cx,ty,bw,color) {
+  const sh=bw*0.9;
+  ctx.beginPath(); ctx.moveTo(cx,ty-sh); ctx.lineTo(cx-bw*0.21,ty); ctx.lineTo(cx+bw*0.21,ty); ctx.closePath();
+  ctx.fillStyle=color; ctx.fill();
+  ctx.shadowBlur=16; ctx.shadowColor=color;
+  ctx.strokeStyle=rgba(color,0.6); ctx.lineWidth=1; ctx.stroke();
+  ctx.shadowBlur=0;
+}
+
+function drawCrown(cx,ty) {
+  const pulse=1+0.12*Math.sin(frame*0.04), r=7*pulse;
+  const ag=ctx.createRadialGradient(cx,ty,0,cx,ty,r*4);
+  ag.addColorStop(0,'rgba(255,200,64,0.75)'); ag.addColorStop(0.35,'rgba(240,150,30,0.3)'); ag.addColorStop(1,'transparent');
+  ctx.fillStyle=ag; ctx.beginPath(); ctx.arc(cx,ty,r*4,0,Math.PI*2); ctx.fill();
+  ctx.beginPath(); ctx.arc(cx,ty,r,0,Math.PI*2);
+  ctx.fillStyle='#f0b840'; ctx.fill();
+  ctx.strokeStyle='#ffd060'; ctx.lineWidth=1.5; ctx.stroke();
+}
+
+/* ---- District renderers ---- */
+// THE QUARTER — warm sandy stucco apartments (LA bungalow style)
+function drawQuarter(o,os,x,dw,groundY,cx,cycles,cracks,active) {
+  const base=24,pf=22,seed=12;
+  const configs=[{ox:cx-dw*0.30,bw:27,hm:1.0},{ox:cx-dw*0.01,bw:23,hm:0.78},{ox:cx+dw*0.19,bw:29,hm:0.88}];
+  configs.forEach((b,bi) => {
+    const bh=bldH(cycles,base,pf)*b.hm, bx=b.ox, by=groundY-bh;
+    // Warm stucco — sandy beige with desert tone
+    drawBuilding(bx,by,b.bw,bh,'#2a1e0e','#1c1408',o.color,cycles,cracks,seed+bi*11);
+    // Stucco texture strips
+    if (cycles>=1) {
+      ctx.fillStyle='rgba(196,154,108,0.08)';
+      for (let s=0;s<3;s++) ctx.fillRect(bx,by+bh*0.25*(s+1),b.bw,1.5);
+    }
+    if (cycles>=6&&bi===0) drawSpire(bx+b.bw/2,by,b.bw*0.6,o.color);
+    if (cycles>=9&&bi===0) drawCrown(bx+b.bw/2,by-b.bw*0.6);
+  });
+}
+
+// THE WARD — glass & steel towers (Wilshire Blvd style)
+function drawWard(o,os,x,dw,groundY,cx,cycles,cracks,active) {
+  const base=32,pf=26,seed=24;
+  const configs=[{ox:cx-dw*0.27,bw:40,hm:1.0},{ox:cx+dw*0.08,bw:32,hm:0.73}];
+  configs.forEach((b,bi) => {
+    const bh=bldH(cycles,base,pf)*b.hm, bx=b.ox, by=groundY-bh;
+    // Reflective glass — teal/cyan with warm sunset wash
+    drawBuilding(bx,by,b.bw,bh,'#08181e','#050e16',o.color,cycles,cracks,seed+bi*13);
+    // Sunset reflection strip on glass
+    if (cycles>=1) {
+      const rg=ctx.createLinearGradient(bx,by,bx+b.bw,by);
+      rg.addColorStop(0,'transparent'); rg.addColorStop(0.5,'rgba(240,140,40,0.12)'); rg.addColorStop(1,'transparent');
+      ctx.fillStyle=rg; ctx.fillRect(bx,by,b.bw,bh);
+    }
+    if (cycles>=6&&bi===0) drawSpire(bx+b.bw/2,by,b.bw*0.52,o.color);
+    if (cycles>=9&&bi===0) drawCrown(bx+b.bw/2,by-b.bw*0.52);
+  });
+}
+
+// THE DISTRICT — Arts District warehouse / industrial
+function drawDistrict48(o,os,x,dw,groundY,cx,cycles,cracks,active) {
+  const base=36,pf=27,seed=48;
+  const configs=[{ox:cx-dw*0.30,bw:44,hm:1.0},{ox:cx+dw*0.07,bw:35,hm:0.76}];
+  configs.forEach((b,bi) => {
+    const bh=bldH(cycles,base,pf)*b.hm, bx=b.ox, by=groundY-bh;
+    // Terracotta / rust brick
+    drawBuilding(bx,by,b.bw,bh,'#200e06','#160a04',o.color,cycles,cracks,seed+bi*17);
+    // Brick texture
+    if (cycles>=1) {
+      ctx.fillStyle=rgba(o.color,0.06);
+      for (let r=0;r<Math.floor(bh/8);r++) ctx.fillRect(bx,by+r*8,b.bw,1);
+    }
+    // Water tower / chimney
+    if (cycles>=2&&bi===0) {
+      const th=16+cycles*2, tw=8, tx2=bx+b.bw*0.2;
+      ctx.fillStyle='#180a04'; ctx.fillRect(tx2,by-th,tw,th);
+      ctx.strokeStyle=rgba(o.color,0.22); ctx.lineWidth=1; ctx.strokeRect(tx2,by-th,tw,th);
+      if (active) {
+        const sx=tx2+tw/2, sy=by-th-3-(frame%30);
+        ctx.beginPath(); ctx.arc(sx,sy,3,0,Math.PI*2);
+        ctx.fillStyle=`rgba(180,100,40,${0.4-(frame%30)/75})`; ctx.fill();
+      }
+    }
+    if (cycles>=6&&bi===0) drawSpire(bx+b.bw/2,by,b.bw*0.45,o.color);
+    if (cycles>=9&&bi===0) drawCrown(bx+b.bw/2,by-b.bw*0.45);
+  });
+}
+
+// THE SECTOR — Civic Center / government (purple/lavender Art Deco)
+function drawSector(o,os,x,dw,groundY,cx,cycles,cracks,active) {
+  const base=42,pf=29,seed=72;
+  const bw=Math.min(dw*0.70,80), bh=bldH(cycles,base,pf), bx=cx-bw/2, by=groundY-bh;
+  drawBuilding(bx,by,bw,bh,'#120c1e','#0c0818',o.color,cycles,cracks,seed);
+  // Art Deco horizontal bands
+  if (cycles>=1) {
+    for (let band=0;band<4;band++) {
+      ctx.fillStyle=rgba(o.color,0.15);
+      ctx.fillRect(bx,by+bh*(0.2+band*0.2),bw,2);
+    }
+  }
+  // Columns at base (Greco-Roman civic)
+  if (cycles>=2) {
+    const nc=4, cs=bw/(nc+1);
+    for (let c=0;c<nc;c++) {
+      const colH=Math.min(30,bh*0.28);
+      ctx.fillStyle=rgba(o.color,0.22);
+      ctx.fillRect(bx+cs*(c+1)-2,groundY-colH,4,colH);
+    }
+  }
+  // Art Deco stepped top
+  if (cycles>=4) {
+    ctx.fillStyle='#180e28'; ctx.fillRect(bx+bw*0.1,by-8,bw*0.8,8);
+    ctx.fillStyle='#200e30'; ctx.fillRect(bx+bw*0.2,by-15,bw*0.6,7);
+  }
+  if (cycles>=6) drawSpire(cx,by-8*(cycles>=4?2:0),bw*0.28,o.color);
+  if (cycles>=9) drawCrown(cx,by-bw*0.28-8*(cycles>=4?2:0));
+}
+
+// THE CITADEL — Bunker Hill / Wilshire Grand style (gold monolith)
+function drawCitadel(o,os,x,dw,groundY,cx,cycles,cracks,active) {
+  const base=50,pf=32,seed=144;
+  const bw=Math.min(dw*0.55,65), bh=bldH(cycles,base,pf), bx=cx-bw/2, by=groundY-bh;
+
+  // Outer aura
+  if (cycles>0) {
+    const aura=ctx.createRadialGradient(cx,by+bh*0.5,0,cx,by+bh*0.5,bw*2.2);
+    aura.addColorStop(0,rgba(o.color,0.14)); aura.addColorStop(1,'transparent');
+    ctx.fillStyle=aura; ctx.fillRect(bx-bw,by-30,bw*3,bh+60);
+  }
+  drawBuilding(bx,by,bw,bh,'#1e1400','#120e00',o.color,cycles,cracks,seed);
+
+  // Gold trim lines (iconic LA tower detail)
+  if (cycles>=1) {
+    const nl=Math.min(cycles,7);
+    for (let l=0;l<nl;l++) {
+      ctx.fillStyle=rgba(o.color,0.30); ctx.fillRect(bx,by+bh*((l+1)/(nl+1)),bw,2);
+    }
+  }
+  // Reflective sunset on glass facade
+  if (cycles>=1) {
+    const rg=ctx.createLinearGradient(bx+bw,by,bx,by);
+    rg.addColorStop(0,'transparent'); rg.addColorStop(0.3,rgba(o.color,0.12)); rg.addColorStop(1,'transparent');
+    ctx.fillStyle=rg; ctx.fillRect(bx,by,bw,bh);
+  }
+  // Gold border
+  ctx.strokeStyle=rgba(o.color, cycles>=9?0.75:0.42); ctx.lineWidth=cycles>=9?2:1;
+  ctx.strokeRect(bx,by,bw,bh);
+
+  if (cycles>=6) drawSpire(cx,by,bw*0.40,o.color);
+  if (cycles>=9) {
+    drawCrown(cx,by-bw*0.40);
+    // Sovereign aura rings
+    const a1=0.32+0.2*Math.sin(frame*0.04), a2=0.14+0.14*Math.sin(frame*0.04+1.6);
+    ctx.beginPath(); ctx.arc(cx,by-bw*0.40,22,0,Math.PI*2);
+    ctx.strokeStyle=`rgba(255,200,64,${a1})`; ctx.lineWidth=1.5; ctx.stroke();
+    ctx.beginPath(); ctx.arc(cx,by-bw*0.40,34,0,Math.PI*2);
+    ctx.strokeStyle=`rgba(255,180,40,${a2})`; ctx.lineWidth=1; ctx.stroke();
+  }
+}
+
+/* ============================================================
+   UI RENDER
+============================================================ */
+function renderIdentity() {
+  const id = getIdentity();
+  document.getElementById('identity-title').textContent = id.title;
+  document.getElementById('identity-sub').textContent   = id.sub;
+}
+
+function renderStability() {
+  const s=getStability();
+  document.getElementById('stab-fill').style.width = s+'%';
+  document.getElementById('stab-score').textContent = s+'%';
+  const sf=document.getElementById('stab-fill'), sc=document.getElementById('stab-score');
+  if      (s>=80){ sf.style.background='linear-gradient(90deg,#c47020,#f0b840)'; sc.style.color='#f0b840'; }
+  else if (s>=60){ sf.style.background='linear-gradient(90deg,#b05010,#e07020)'; sc.style.color='#e07020'; }
+  else if (s>=40){ sf.style.background='linear-gradient(90deg,#8a1818,#c02828)'; sc.style.color='#e03030'; }
+  else           { sf.style.background='linear-gradient(90deg,#601010,#b01818)'; sc.style.color='#d02020'; }
+}
+
+function renderCards() {
+  const grid=document.getElementById('ordersGrid');
+  grid.innerHTML='';
+  ORDERS.forEach(o => {
+    const os=state.orders[o.id], rank=getRank(os.cycles);
+    const rem=getRemaining(o.id), prog=getProgress(o.id);
+    const ready=isComplete(o.id), mas=getMasteryBonus(o.id);
+    let phaseHtml='', actionsHtml='';
+
+    if (os.phase==='fasting') {
+      phaseHtml=`
+        <div class="phase-row"><div class="phase-dot fasting"></div><span class="phase-text fasting">FASTING</span></div>
+        <div class="timer ${ready?'ready':''}">${ready?'✦ READY TO SEAL':fmtMs(rem)}</div>
+        <div class="prog-bar"><div class="prog-fill" style="width:${Math.round(prog*100)}%"></div></div>`;
+      const sealClass = ready ? 'ready' : 'locked';
+      const sealLabel = ready ? '◆ SEAL CYCLE' : '⚡ FORCE SEAL';
+      const sealTitle = ready ? 'Seal this completed cycle' : 'Phase not complete — sealing early causes structural damage';
+      actionsHtml=`<button class="btn btn-seal ${sealClass}" title="${sealTitle}" onclick="sealCycle('${o.id}')">${sealLabel}</button>
+                   <button class="btn btn-void" title="Void — records a crack" onclick="voidCycle('${o.id}')">⚑ VOID</button>`;
+
+    } else if (os.phase==='recovery') {
+      const rr=getRemaining(o.id);
+      phaseHtml=`
+        <div class="phase-row"><div class="phase-dot recovery"></div><span class="phase-text recovery">RECOVERY</span></div>
+        <div class="timer" style="color:#4cd98a;font-size:17px">${fmtMs(rr)}</div>
+        <div class="prog-bar"><div class="prog-fill" style="width:${Math.round((1-prog)*100)}%;background:var(--green)"></div></div>`;
+      actionsHtml=`<button class="btn btn-recovery" onclick="endRecovery('${o.id}')">◎ END RECOVERY</button>`;
+
+    } else {
+      phaseHtml=`
+        <div class="phase-row"><div class="phase-dot"></div><span class="phase-text">IDLE</span></div>
+        <div class="timer idle">${o.dur}:00:00</div>
+        <div class="prog-bar"><div class="prog-fill" style="width:0%"></div></div>`;
+      actionsHtml=`<button class="btn btn-start" onclick="startFasting('${o.id}')">▶ BEGIN FAST</button>`;
+    }
+
+    const card=document.createElement('div');
+    card.className=`order-card is-${os.phase}`;
+    card.style.setProperty('--oc',o.color);
+    card.innerHTML=`
+      <div class="oc-label">${o.district}</div>
+      <div class="oc-duration">${o.label}</div>
+      <div class="rank-block">
+        <div class="rank-name">${rank.sym} ${rank.name}</div>
+        <div class="rank-cycles">${os.cycles} cycle${os.cycles!==1?'s':''} sealed</div>
+      </div>
+      ${phaseHtml}
+      <div class="stats-row">
+        <div class="stat"><div class="stat-val">${os.cycles}</div><div class="stat-lbl">Cycles</div></div>
+        <div class="stat cracks"><div class="stat-val">${os.cracks}</div><div class="stat-lbl">Cracks</div></div>
+        <div class="stat"><div class="stat-val">${rank.tier}</div><div class="stat-lbl">Tier</div></div>
+      </div>
+      <div class="mastery-badge${mas>0?' visible':''}">⬆ Mastery Bonus: +${mas}%</div>
+      <div class="actions">${actionsHtml}</div>`;
+    grid.appendChild(card);
+  });
+}
+
+function renderChronicle() {
+  const log=document.getElementById('chronLog'), cnt=document.getElementById('chronCount');
+  cnt.textContent=`${state.chronicle.length} entr${state.chronicle.length!==1?'ies':'y'}`;
+  if (!state.chronicle.length) {
+    log.innerHTML='<div class="chron-empty">The chronicle awaits your first cycle…</div>'; return;
+  }
+  log.innerHTML=state.chronicle.map(e=>`
+    <div class="chron-entry">
+      <div class="chron-icon" style="color:${e.color}">${e.icon}</div>
+      <div class="chron-body">
+        <div class="chron-title" style="color:${e.color}">${e.title}</div>
+        <div class="chron-text">${e.text}</div>
+        <div class="chron-time">${e.ts}</div>
+      </div>
+    </div>`).join('');
+}
+
+function buildDistrictLabels() {
+  document.getElementById('districtLabels').innerHTML =
+    ORDERS.map(o=>`<div class="district-label" id="dlbl-${o.id}">${o.district}</div>`).join('');
+}
+
+function fullRender() { renderIdentity(); renderStability(); renderCards(); renderChronicle(); }
+
+/* ============================================================
+   ANIMATION LOOP & TIMER
+============================================================ */
+function animate() { drawCity(); requestAnimationFrame(animate); }
+
+setInterval(() => {
+  let changed=false;
+  ORDERS.forEach(o => {
+    const os=state.orders[o.id];
+    if (os.phase==='recovery' && os.phaseEnd && Date.now()>=os.phaseEnd) { endRecovery(o.id); changed=true; }
+  });
+  if (!changed) { renderCards(); renderIdentity(); renderStability(); }
+}, 1000);
+
+/* ============================================================
+   INIT
+============================================================ */
+window.addEventListener('DOMContentLoaded', () => {
+  initState(); resizeCanvas(); genStars(); buildDistrictLabels(); fullRender();
+  requestAnimationFrame(animate);
+});
+window.addEventListener('resize', () => { resizeCanvas(); genStars(); });
+
+// Expose for inline handlers
+window.startFasting = startFasting;
+window.sealCycle    = sealCycle;
+window.voidCycle    = voidCycle;
+window.endRecovery  = endRecovery;
+</script>
+</body>
+</html>

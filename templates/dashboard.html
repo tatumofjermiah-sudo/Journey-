@@ -1,0 +1,180 @@
+{% extends "base.html" %}
+{% block content %}
+
+{% if city.flow_state_active %}
+<div class="flow-banner">
+  ★ FLOW STATE ACTIVE — your next completed cycle earns double bricks!
+</div>
+{% endif %}
+
+<!-- ── Stats row ── -->
+<div class="stats">
+  <div class="stat">
+    <div class="label">Total Bricks</div>
+    <div class="value">{{ summary.total_bricks }}</div>
+  </div>
+  <div class="stat">
+    <div class="label">Stability</div>
+    <div class="value {% if summary.stability >= 80 %}ok{% elif summary.stability < 50 %}bad{% endif %}">
+      {{ summary.stability }}<span style="font-size:.9rem;color:var(--muted)">/100</span>
+    </div>
+  </div>
+  <div class="stat">
+    <div class="label">Completed Cycles</div>
+    <div class="value">{{ summary.completed_cycles }}</div>
+  </div>
+  <div class="stat">
+    <div class="label">Active Cracks</div>
+    <div class="value {% if summary.active_cracks > 0 %}bad{% else %}ok{% endif %}">
+      {{ summary.active_cracks }}
+    </div>
+  </div>
+</div>
+
+<!-- ── Rank card ── -->
+<div class="card" style="margin-bottom:1.5rem">
+  <h2>Current Rank</h2>
+  <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:1rem;flex-wrap:wrap">
+    <div>
+      <div style="font-size:1.15rem;font-weight:700;color:var(--accent)">{{ rank_def.civic_title }}</div>
+      <div style="color:var(--muted);font-size:.85rem;margin-top:.2rem">{{ rank_def.district_name }}</div>
+      <div style="color:var(--text);font-size:.8rem;margin-top:.6rem;max-width:520px">{{ rank_def.district_description }}</div>
+    </div>
+    {% if next_rank %}
+    <div style="min-width:200px">
+      <div style="font-size:.72rem;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:.4rem">
+        Next rank in {{ bricks_to_next }} bricks
+      </div>
+      <div class="progress-wrap">
+        <div class="progress-bar"><span style="width:{{ progress_pct }}%"></span></div>
+        <div class="progress-label">{{ progress_pct }}% to {{ next_rank.name.replace('_',' ').title() }}</div>
+      </div>
+    </div>
+    {% else %}
+    <span class="badge badge-success">APEX — Sovereign Architect</span>
+    {% endif %}
+  </div>
+</div>
+
+<!-- ── Two-column grid ── -->
+<div class="grid-2">
+
+  <!-- ── Left column ── -->
+  <div>
+    <!-- Active Cycle -->
+    <div class="card" style="margin-bottom:1.5rem">
+      <h2>Active Cycle</h2>
+      {% if active_cycle %}
+      <div class="active-cycle-header">
+        <div>
+          <div style="font-size:1.05rem;font-weight:700;color:var(--accent2)">
+            {{ active_cycle.cycle_type.display_name }} — {{ active_cycle.cycle_type.hours }}h
+          </div>
+          <div class="cycle-elapsed" style="margin-top:.3rem">
+            Started: {{ active_cycle.started_at.strftime('%Y-%m-%d %H:%M UTC') }}
+          </div>
+          <div class="cycle-elapsed">
+            Elapsed: {{ "%.1f"|format(active_cycle.elapsed_hours) }}h / {{ active_cycle.cycle_type.hours }}h
+          </div>
+        </div>
+        <span class="badge badge-info">ACTIVE</span>
+      </div>
+      <hr style="border:none;border-top:1px solid var(--border);margin:1rem 0">
+      <form action="{{ url_for('complete') }}" method="post" style="margin-bottom:.75rem">
+        <label>Notes (optional)</label>
+        <div class="form-row">
+          <div class="grow"><input type="text" name="notes" placeholder="How did it go?"></div>
+          <button class="btn btn-success" type="submit">✓ Complete</button>
+        </div>
+      </form>
+      <form action="{{ url_for('fail') }}" method="post">
+        <label>Reason for failing (optional)</label>
+        <div class="form-row">
+          <div class="grow"><input type="text" name="notes" placeholder="What went wrong?"></div>
+          <button class="btn btn-danger" type="submit">✗ Fail</button>
+        </div>
+      </form>
+      {% else %}
+      <p style="color:var(--muted);font-size:.88rem;margin-bottom:1rem">No cycle in progress. Start one below.</p>
+      <form action="{{ url_for('start') }}" method="post">
+        <label>Choose an Order</label>
+        <select name="order">
+          {% for ct in cycle_types %}
+          <option value="{{ ct.name }}">{{ ct.display_name }} — {{ ct.hours }}h</option>
+          {% endfor %}
+        </select>
+        <button class="btn btn-primary" type="submit">▶ Start Cycle</button>
+      </form>
+      {% endif %}
+    </div>
+
+    <!-- Districts -->
+    <div class="card" style="margin-bottom:1.5rem">
+      <h2>Districts Built</h2>
+      <table style="width:100%;border-collapse:collapse;font-size:.85rem">
+        <thead>
+          <tr>
+            <th style="text-align:left;color:var(--muted);font-weight:400;padding-bottom:.5rem">Order</th>
+            <th style="text-align:right;color:var(--muted);font-weight:400;padding-bottom:.5rem">Duration</th>
+            <th style="text-align:right;color:var(--muted);font-weight:400;padding-bottom:.5rem">Districts</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for ct in cycle_types %}
+          <tr style="border-top:1px solid var(--border)">
+            <td style="padding:.45rem 0">{{ ct.display_name }}</td>
+            <td style="text-align:right;color:var(--muted)">{{ ct.hours }}h</td>
+            <td style="text-align:right;color:var(--accent);font-weight:700">{{ city.district_counts[ct] }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    {% if city.active_cracks %}
+    <div class="card" style="margin-bottom:1.5rem">
+      <h2>Structural Cracks</h2>
+      {% for i, crack in city.active_cracks|enumerate %}
+      <div class="crack-item">
+        <div>
+          <span style="font-weight:600">{{ crack.cycle_type.display_name }}</span>
+          <span class="badge badge-danger" style="margin-left:.5rem">{{ crack.severity_label }}</span>
+        </div>
+        <form action="{{ url_for('repair', index=i) }}" method="post">
+          <button class="btn btn-muted btn-sm" type="submit">Repair</button>
+        </form>
+      </div>
+      {% endfor %}
+    </div>
+    {% endif %}
+  </div>
+
+  <!-- ── Right column ── -->
+  <div>
+    <!-- City Map -->
+    <div class="card">
+      <h2>Inner City Map</h2>
+      <div class="city-map">{{ city_map }}</div>
+    </div>
+
+    <!-- Infrastructure -->
+    <div class="card" style="margin-top:1.5rem">
+      <h2>Infrastructure</h2>
+      {% for infra in city.infrastructure %}
+      <div style="display:flex;align-items:flex-start;gap:.75rem;padding:.6rem 0;border-bottom:1px solid var(--border)">
+        <span style="font-size:1rem;margin-top:.05rem">{% if infra.unlocked %}✅{% else %}🔒{% endif %}</span>
+        <div>
+          <div style="font-size:.88rem;font-weight:600{% if not infra.unlocked %};color:var(--muted){% endif %}">
+            {{ infra.name }}
+          </div>
+          <div style="font-size:.75rem;color:var(--muted);margin-top:.15rem">
+            {% if infra.unlocked %}{{ infra.description }}{% else %}{{ infra.unlock_condition }}{% endif %}
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+
+</div><!-- /.grid-2 -->
+{% endblock %}

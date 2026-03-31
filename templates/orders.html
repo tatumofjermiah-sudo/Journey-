@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="section-title">Available Orders</div>
+<p style="color:var(--muted);font-size:.88rem;margin-bottom:1.5rem">
+  Each Order is a domain of mastery and a construction zone in your inner city.
+  Completing cycles earns bricks; bricks build districts; districts reveal your rank.
+</p>
+
+{% for ct in cycle_types %}
+{% set defn = order_definitions[ct] %}
+<div class="card" style="margin-bottom:1.25rem">
+  <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:1rem">
+    <div style="flex:1;min-width:280px">
+      <div style="font-size:1rem;font-weight:700;color:var(--accent)">{{ defn.order_name }}</div>
+      <div style="color:var(--muted);font-size:.78rem;margin-top:.2rem">{{ defn.scaffolding_description }}</div>
+      <div style="color:var(--text);font-size:.85rem;margin-top:.75rem;font-style:italic">
+        "{{ defn.construction_metaphor }}"
+      </div>
+      <div style="color:var(--accent2);font-size:.8rem;margin-top:.6rem">
+        ⚡ {{ defn.bonus_description }}
+      </div>
+    </div>
+    <div style="text-align:right;min-width:120px">
+      <div style="font-size:2rem;font-weight:800;color:var(--accent)">{{ ct.hours }}<span style="font-size:.9rem;color:var(--muted)">h</span></div>
+      <div style="font-size:.75rem;color:var(--muted);margin-top:.2rem">{{ defn.brick_value }} brick{% if defn.brick_value != 1 %}s{% endif %} on completion</div>
+      <form action="{{ url_for('start') }}" method="post" style="margin-top:.75rem">
+        <input type="hidden" name="order" value="{{ ct.name }}">
+        <button class="btn btn-primary btn-sm" type="submit">▶ Start</button>
+      </form>
+    </div>
+  </div>
+</div>
+{% endfor %}
+{% endblock %}

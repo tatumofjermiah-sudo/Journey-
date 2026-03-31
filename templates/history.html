@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="section-title">Cycle History</div>
+
+{% if not cycles %}
+<div class="card">
+  <p style="color:var(--muted);font-size:.88rem">No cycles in history yet. Start one from the <a href="{{ url_for('dashboard') }}">Dashboard</a>.</p>
+</div>
+{% else %}
+<div class="card">
+  <table style="width:100%;border-collapse:collapse;font-size:.85rem">
+    <thead>
+      <tr>
+        <th style="text-align:left;color:var(--muted);font-weight:400;padding-bottom:.75rem">Status</th>
+        <th style="text-align:left;color:var(--muted);font-weight:400;padding-bottom:.75rem">Started</th>
+        <th style="text-align:left;color:var(--muted);font-weight:400;padding-bottom:.75rem">Order</th>
+        <th style="text-align:right;color:var(--muted);font-weight:400;padding-bottom:.75rem">Duration</th>
+        <th style="text-align:right;color:var(--muted);font-weight:400;padding-bottom:.75rem">Bricks</th>
+        <th style="text-align:left;color:var(--muted);font-weight:400;padding-bottom:.75rem">Notes</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for cycle in cycles|reverse %}
+      <tr style="border-top:1px solid var(--border)">
+        <td style="padding:.55rem 0">
+          {% if cycle.status.value == 'completed' %}
+          <span class="badge badge-success">✓ Done</span>
+          {% else %}
+          <span class="badge badge-danger">✗ Failed</span>
+          {% endif %}
+        </td>
+        <td style="color:var(--muted);font-size:.8rem">{{ cycle.started_at.strftime('%Y-%m-%d %H:%M') }}</td>
+        <td style="font-weight:600">{{ cycle.cycle_type.display_name }}</td>
+        <td style="text-align:right;color:var(--muted)">{{ cycle.cycle_type.hours }}h</td>
+        <td style="text-align:right;color:var(--accent);font-weight:700">
+          {% if cycle.bricks_earned %}+{{ cycle.bricks_earned }}{% else %}—{% endif %}
+        </td>
+        <td style="color:var(--muted);font-size:.8rem;max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">
+          {{ cycle.notes or '' }}
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endif %}
+{% endblock %}

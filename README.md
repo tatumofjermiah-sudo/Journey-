@@ -62,9 +62,10 @@ of mastery:
 ## Installation
 
 ```bash
-# Python 3.9+ required — no external dependencies
+# Python 3.9+ required
 git clone https://github.com/tatumofjermiah-sudo/Journey-.git
 cd Journey-
+pip install -r requirements.txt
 ```
 
 For tests:
@@ -76,7 +77,26 @@ pytest tests/ -v
 
 ---
 
-## Usage
+## Web Interface (localhost)
+
+The easiest way to use The Architects' Codex is through the web UI:
+
+```bash
+python app.py
+```
+
+Then open **http://localhost:5000** in your browser.
+
+The web interface gives you:
+- **Dashboard** — live stats (bricks, stability, rank, progress to next rank), active cycle controls (start / complete / fail), district table, structural cracks with repair buttons, and the ASCII inner-city map
+- **Orders** — browse all five orders with their symbolic descriptions and start a cycle directly
+- **History** — full log of every completed and failed cycle
+
+Both the web server and the CLI share the same save file (`~/.architects_codex/state.json`), so you can switch between them freely.
+
+---
+
+## CLI (command line)
 
 ```
 python main.py <command> [args]
@@ -132,12 +152,20 @@ architects_codex/
   ranks.py          — Rank, RankDefinition (districts)
   city.py           — City (bricks, cracks, infrastructure, ASCII map)
   tracker.py        — CycleTracker (lifecycle, compound bonuses, persistence)
+app.py              — Flask web server (http://localhost:5000)
 main.py             — CLI entry point
+templates/
+  base.html         — shared layout and styles
+  dashboard.html    — main web dashboard
+  orders.html       — order browser
+  history.html      — cycle history log
+requirements.txt    — Flask dependency
 tests/
   test_cycles.py
   test_ranks.py
   test_city.py
   test_tracker.py
+  test_app.py       — web server tests
 ```
 
 State is persisted automatically to `~/.architects_codex/state.json`.

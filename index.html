@@ -1,0 +1,1602 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Journey — The Cycle Protocol</title>
+  <style>
+    /* ============================================================
+       VARIABLES & RESET
+    ============================================================ */
+    :root {
+      --bg:       #08060e;
+      --bg2:      #0c0a16;
+      --bg3:      #10101e;
+      --border:   #1e1a2e;
+      --text:     #ede8f8;
+      --muted:    #8878a8;
+      --dim:      #4a4068;
+      --gold:     #f0b840;
+      --gold-lt:  #ffd060;
+      --blue:     #5bb8d4;
+      --green:    #4cd98a;
+      --red:      #e03030;
+      --coral:    #e8702a;
+      --purple:   #b89fd8;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { font-size: 15px; scroll-behavior: smooth; }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: var(--bg); }
+    ::-webkit-scrollbar-thumb { background: #2e2845; border-radius: 3px; }
+    ::-webkit-scrollbar-thumb:hover { background: #3e3860; }
+
+    /* ============================================================
+       HEADER — warm LA amber/gold gradient accent
+    ============================================================ */
+    #header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 13px 28px;
+      background: rgba(8,6,14,0.96);
+      border-bottom: 1px solid rgba(240,184,64,0.12);
+      position: sticky;
+      top: 0;
+      z-index: 200;
+      backdrop-filter: blur(14px);
+      gap: 12px;
+    }
+    .hd-logo h1 {
+      font-size: 22px;
+      font-weight: 900;
+      letter-spacing: .35em;
+      background: linear-gradient(130deg, #c47020, #f0b840, #ffd060, #e09030);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      line-height: 1;
+    }
+    .hd-logo p {
+      font-size: 9px;
+      letter-spacing: .25em;
+      color: var(--dim);
+      text-transform: uppercase;
+      margin-top: 3px;
+    }
+    .hd-identity { text-align: center; flex: 1; min-width: 0; }
+    #identity-title {
+      font-size: 17px;
+      font-weight: 800;
+      color: var(--gold);
+      letter-spacing: .08em;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    #identity-sub { font-size: 11px; color: var(--dim); margin-top: 2px; }
+
+    .hd-stability { text-align: right; min-width: 160px; }
+    .stab-label { font-size: 9px; letter-spacing: .2em; color: var(--dim); text-transform: uppercase; margin-bottom: 5px; }
+    .stab-bar { width: 160px; height: 5px; background: #0d0b18; border-radius: 3px; overflow: hidden; border: 1px solid var(--border); }
+    #stab-fill { height: 100%; background: linear-gradient(90deg,#c47020,#f0b840); border-radius: 3px; transition: width .6s ease, background .6s ease; }
+    #stab-score { font-size: 15px; font-weight: 700; color: var(--gold); margin-top: 3px; transition: color .4s; }
+
+    /* ============================================================
+       CITY CANVAS
+    ============================================================ */
+    .city-wrap { width: 100%; position: relative; background: #080510; overflow: hidden; }
+    #cityCanvas { display: block; width: 100%; }
+    .city-label-bar { display: flex; padding: 0 0 2px; background: rgba(8,5,16,0.95); border-bottom: 1px solid var(--border); }
+    .district-label {
+      flex: 1; text-align: center; font-size: 9px; letter-spacing: .18em;
+      text-transform: uppercase; color: var(--dim); padding: 5px 0;
+      border-right: 1px solid var(--border); transition: color .4s;
+    }
+    .district-label:last-child { border-right: none; }
+    .district-label.active { color: var(--gold); }
+
+    /* ============================================================
+       ORDERS SECTION
+    ============================================================ */
+    .orders-section { padding: 20px 20px 8px; background: var(--bg2); }
+    .orders-grid {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 14px;
+      max-width: 1500px;
+      margin: 0 auto;
+    }
+
+    /* ============================================================
+       ORDER CARD
+    ============================================================ */
+    .order-card {
+      background: var(--bg3);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 18px 16px;
+      position: relative;
+      overflow: hidden;
+      transition: border-color .3s, box-shadow .3s;
+    }
+    .order-card::before {
+      content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
+      background: var(--oc); opacity: .35; transition: opacity .3s;
+    }
+    .order-card.is-fasting { border-color: color-mix(in srgb, var(--oc) 50%, transparent); box-shadow: 0 0 28px color-mix(in srgb, var(--oc) 14%, transparent); }
+    .order-card.is-fasting::before { opacity: 1; animation: pulse-top 2s ease-in-out infinite; }
+    .order-card.is-recovery::before { opacity: .7; background: var(--green); }
+    @keyframes pulse-top { 0%,100%{ opacity:.5; } 50%{ opacity:1; } }
+
+    .oc-label { font-size: 9px; letter-spacing: .2em; text-transform: uppercase; color: var(--dim); margin-bottom: 3px; }
+    .oc-duration { font-size: 30px; font-weight: 900; color: var(--oc); line-height: 1; letter-spacing: -.02em; }
+
+    .rank-block { margin: 11px 0 10px; padding: 8px 10px; background: var(--bg); border-radius: 7px; border: 1px solid var(--border); }
+    .rank-name { font-size: 12px; font-weight: 700; color: var(--oc); }
+    .rank-cycles { font-size: 10px; color: var(--dim); margin-top: 2px; }
+
+    .phase-row { display: flex; align-items: center; gap: 7px; margin: 9px 0 5px; }
+    .phase-dot { width: 7px; height: 7px; border-radius: 50%; background: #2e2845; flex-shrink: 0; }
+    .phase-dot.fasting { background: var(--blue); box-shadow: 0 0 8px var(--blue); animation: pdot 1.5s ease-in-out infinite; }
+    .phase-dot.recovery { background: var(--green); box-shadow: 0 0 8px var(--green); animation: pdot 2s ease-in-out infinite; }
+    @keyframes pdot { 0%,100%{ opacity:.55; transform:scale(1); } 50%{ opacity:1; transform:scale(1.45); } }
+    .phase-text { font-size: 10px; letter-spacing: .15em; text-transform: uppercase; color: var(--dim); }
+    .phase-text.fasting { color: var(--blue); }
+    .phase-text.recovery { color: var(--green); }
+
+    .timer { font-family: 'Courier New', monospace; font-size: 21px; font-weight: 700; letter-spacing: .05em; color: var(--text); margin: 6px 0 5px; }
+    .timer.ready { color: var(--green); animation: timer-glow 1.5s ease-in-out infinite; }
+    .timer.idle { color: var(--border); }
+    @keyframes timer-glow { 0%,100%{ text-shadow:none; } 50%{ text-shadow:0 0 14px var(--green); } }
+
+    .prog-bar { height: 3px; background: var(--bg); border-radius: 2px; overflow: hidden; margin-bottom: 10px; }
+    .prog-fill { height: 100%; background: var(--oc); border-radius: 2px; transition: width 1s linear; }
+
+    .stats-row { display: flex; margin: 8px 0; border: 1px solid var(--border); border-radius: 7px; overflow: hidden; background: var(--bg); }
+    .stat { flex: 1; text-align: center; padding: 7px 4px; border-right: 1px solid var(--border); }
+    .stat:last-child { border-right: none; }
+    .stat-val { font-size: 19px; font-weight: 800; color: var(--text); line-height: 1; }
+    .stat.cracks .stat-val { color: var(--red); }
+    .stat-lbl { font-size: 9px; text-transform: uppercase; letter-spacing: .1em; color: var(--dim); margin-top: 2px; }
+
+    .mastery-badge { font-size: 10px; color: var(--gold); background: rgba(240,184,64,.07); border: 1px solid rgba(240,184,64,.18); border-radius: 5px; padding: 4px 8px; margin: 7px 0; display: none; }
+    .mastery-badge.visible { display: block; }
+
+    .actions { display: flex; gap: 7px; margin-top: 11px; flex-wrap: wrap; }
+    .btn { flex: 1; min-width: 70px; padding: 8px 10px; border: 1px solid transparent; border-radius: 7px; font-size: 10px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; cursor: pointer; transition: all .2s; line-height: 1.2; }
+    .btn:hover { transform: translateY(-1px); }
+    .btn:active { transform: translateY(0); filter: brightness(1.2); }
+
+    .btn-start { background: linear-gradient(135deg,#0e1c38,#163060); color: #70a8f0; border-color: #163060; }
+    .btn-start:hover { background: linear-gradient(135deg,#163060,#2050a0); color: #a0c8ff; }
+
+    .btn-seal { background: linear-gradient(135deg,#0a2010,#1a4428); color: #55aa70; border-color: #1a4428; }
+    .btn-seal.ready { background: linear-gradient(135deg,#185028,#2a8845); color: #70e090; border-color: #2a8845; animation: btn-glow-g 2s ease-in-out infinite; }
+    .btn-seal.locked { background: linear-gradient(135deg,#280808,#4e1010); color: #cc5050; border-color: #4e1010; }
+    @keyframes btn-glow-g { 0%,100%{ box-shadow:none; } 50%{ box-shadow:0 0 14px rgba(76,217,138,.45); } }
+
+    .btn-void { background: linear-gradient(135deg,#1e0808,#381010); color: #aa3838; border-color: #381010; }
+    .btn-void:hover { background: linear-gradient(135deg,#381010,#681818); color: #dd5050; }
+
+    .btn-recovery { background: linear-gradient(135deg,#081808,#102010); color: #3a7040; border-color: #102010; }
+    .btn-recovery:hover { background: linear-gradient(135deg,#102010,#203020); color: #60a068; }
+
+    /* ============================================================
+       CHRONICLE
+    ============================================================ */
+    .chronicle-section { padding: 22px; background: var(--bg); border-top: 1px solid var(--border); }
+    .chron-header { display: flex; align-items: center; justify-content: space-between; max-width: 1500px; margin: 0 auto 14px; }
+    .chron-header h2 { font-size: 13px; font-weight: 700; letter-spacing: .22em; text-transform: uppercase; color: var(--muted); }
+    .chron-count { font-size: 11px; color: var(--dim); }
+    .chron-log { max-width: 1500px; margin: 0 auto; max-height: 300px; overflow-y: auto; border: 1px solid var(--border); border-radius: 10px; background: var(--bg2); }
+    .chron-entry { display: flex; gap: 12px; padding: 11px 16px; border-bottom: 1px solid #12101e; transition: background .2s; }
+    .chron-entry:hover { background: var(--bg3); }
+    .chron-entry:last-child { border-bottom: none; }
+    .chron-icon { font-size: 15px; width: 22px; flex-shrink: 0; padding-top: 1px; text-align: center; }
+    .chron-body { flex: 1; min-width: 0; }
+    .chron-title { font-size: 11px; font-weight: 700; letter-spacing: .06em; }
+    .chron-text { font-size: 12px; color: #b0a8c8; margin-top: 2px; line-height: 1.4; }
+    .chron-time { font-size: 9px; color: var(--dim); margin-top: 3px; }
+    .chron-empty { padding: 36px; text-align: center; color: var(--dim); font-style: italic; font-size: 13px; }
+
+    /* ============================================================
+       NOTIFICATIONS
+    ============================================================ */
+    .notif { position: fixed; top: 76px; left: 50%; transform: translateX(-50%); z-index: 999; padding: 13px 24px; border-radius: 10px; font-size: 13px; font-weight: 700; letter-spacing: .08em; text-align: center; pointer-events: none; animation: notif-in .3s ease; }
+    .notif-crack { background: #200808; border: 1px solid #c03020; color: #ff7060; max-width: 380px; }
+    .notif-milestone { background: #1a1200; border: 1px solid var(--gold); color: var(--gold-lt); max-width: 440px; }
+    .notif-milestone .nm-sub { font-size: 11px; font-weight: 400; color: rgba(255,208,96,.65); margin-top: 5px; }
+    @keyframes notif-in { from{ opacity:0; transform:translateX(-50%) translateY(-10px) scale(.93); } to{ opacity:1; transform:translateX(-50%) translateY(0) scale(1); } }
+
+    /* ============================================================
+       FOOTER
+    ============================================================ */
+    footer { text-align: center; padding: 16px; font-size: 10px; color: var(--dim); letter-spacing: .15em; border-top: 1px solid var(--border); background: var(--bg); }
+
+    /* ============================================================
+       GUIDE PANEL — HOW IT WORKS
+    ============================================================ */
+    .guide-section {
+      background: var(--bg2);
+      border-bottom: 1px solid var(--border);
+    }
+    .guide-toggle-row {
+      display: flex; align-items: center; gap: 10px;
+      padding: 9px 22px; cursor: pointer; user-select: none;
+      font-size: 10px; font-weight: 700; letter-spacing: .18em;
+      text-transform: uppercase; color: var(--muted);
+      transition: background .18s, color .18s;
+      width: 100%; border: none; background: transparent;
+      text-align: left;
+    }
+    .guide-toggle-row:hover { background: rgba(255,255,255,0.03); color: var(--text); }
+    .guide-q-badge {
+      width: 18px; height: 18px; border-radius: 50%; flex-shrink: 0;
+      background: var(--border); display: flex; align-items: center;
+      justify-content: center; font-size: 10px; font-weight: 900; color: var(--muted);
+    }
+    .guide-chevron { margin-left: auto; font-size: 11px; transition: transform .25s; }
+    .guide-chevron.open { transform: rotate(180deg); }
+    .guide-body { display: none; padding: 12px 20px 18px; border-top: 1px solid var(--border); }
+    .guide-body.open { display: block; }
+    .guide-cards {
+      display: grid;
+      grid-template-columns: repeat(6,1fr);
+      gap: 10px; max-width: 1500px; margin: 0 auto 14px;
+    }
+    .guide-card {
+      background: var(--bg3); border: 1px solid var(--border); border-radius: 8px;
+      padding: 10px 11px;
+    }
+    .guide-card-h {
+      font-size: 10px; font-weight: 800; letter-spacing: .08em;
+      text-transform: uppercase; color: var(--text); margin-bottom: 5px;
+    }
+    .guide-card p {
+      font-size: 11px; color: var(--muted); line-height: 1.55;
+    }
+    .guide-card strong { color: var(--text); }
+    .guide-legend-title {
+      font-size: 9px; font-weight: 700; letter-spacing: .22em;
+      text-transform: uppercase; color: var(--dim); margin-bottom: 8px;
+      max-width: 1500px; margin-left: auto; margin-right: auto;
+    }
+    .guide-legend {
+      display: flex; flex-wrap: wrap; gap: 8px 20px;
+      max-width: 1500px; margin: 0 auto;
+    }
+    .guide-legend-item {
+      display: flex; align-items: center; gap: 7px;
+      font-size: 11px; color: var(--muted);
+    }
+    .guide-legend-dot {
+      width: 10px; height: 10px; border-radius: 2px; flex-shrink: 0;
+      background: var(--lc, #888);
+    }
+    .guide-legend-item strong { color: var(--text); }
+
+    /* Card hint text */
+    .card-hint {
+      font-size: 10px; color: var(--dim); margin-top: 8px; line-height: 1.45;
+      font-style: italic; border-top: 1px solid var(--border); padding-top: 7px;
+    }
+
+    /* ============================================================
+       RESPONSIVE
+    ============================================================ */
+    @media (max-width: 1100px) {
+      .orders-grid { grid-template-columns: repeat(3,1fr); }
+      .guide-cards  { grid-template-columns: repeat(3,1fr); }
+    }
+    @media (max-width: 680px)  {
+      .orders-grid { grid-template-columns: repeat(2,1fr); }
+      .hd-identity { display:none; }
+      .guide-cards  { grid-template-columns: repeat(2,1fr); }
+    }
+    @media (max-width: 440px)  {
+      .orders-grid { grid-template-columns:1fr; }
+      .hd-stability { min-width:unset; } .stab-bar { width:130px; }
+      .guide-cards  { grid-template-columns:1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header id="header">
+  <div class="hd-logo">
+    <h1>JOURNEY</h1>
+    <p>The Cycle Protocol</p>
+  </div>
+  <div class="hd-identity">
+    <div id="identity-title">The Uninitiated</div>
+    <div id="identity-sub">No cycles sealed. The city awaits.</div>
+  </div>
+  <div class="hd-stability">
+    <div class="stab-label">City Stability</div>
+    <div class="stab-bar"><div id="stab-fill" style="width:100%"></div></div>
+    <div id="stab-score">100%</div>
+  </div>
+</header>
+
+<!-- CITY CANVAS -->
+<div class="city-wrap">
+  <canvas id="cityCanvas"></canvas>
+</div>
+<div class="city-label-bar" id="districtLabels"></div>
+
+<!-- HOW IT WORKS GUIDE -->
+<section class="guide-section">
+  <button class="guide-toggle-row" onclick="toggleGuide()" aria-expanded="false" id="guideRow" type="button">
+    <span class="guide-q-badge">?</span>
+    <span>How The City Works — Tap to learn the rules</span>
+    <span class="guide-chevron" id="guideChevron">▾</span>
+  </button>
+  <div class="guide-body" id="guideBody">
+    <div class="guide-cards">
+      <div class="guide-card">
+        <div class="guide-card-h">🏙 Your City</div>
+        <p>The map above shows <strong>5 districts</strong>. Each district is tied to one fasting order. <strong>Complete fasts → buildings grow taller.</strong> Void fasts → cracks appear.</p>
+      </div>
+      <div class="guide-card">
+        <div class="guide-card-h">⏱ Fasting</div>
+        <p>Pick any order and hit <strong>▶ BEGIN FAST</strong>. The timer counts down. When it reaches zero your fast is complete and you can seal it.</p>
+      </div>
+      <div class="guide-card">
+        <div class="guide-card-h">◆ Cycles</div>
+        <p>A <strong>sealed cycle</strong> = one completed fast. Each one adds a floor to your building. Seal 3 for Third Gate, 6 for Sixth Path, 9 for Ninth Seal.</p>
+      </div>
+      <div class="guide-card">
+        <div class="guide-card-h">⚑ Cracks</div>
+        <p>Hitting <strong>⚑ VOID</strong> or sealing before time's up records a crack. Cracks show as red fracture lines on your building and lower City Stability.</p>
+      </div>
+      <div class="guide-card">
+        <div class="guide-card-h">🛡 Stability</div>
+        <p><strong>Completed cycles ÷ total fasts.</strong> 100% = perfect record. Drops with every crack. Shown top-right of the header. Keep it above 80%.</p>
+      </div>
+      <div class="guide-card">
+        <div class="guide-card-h">⬆ Tiers &amp; Ranks</div>
+        <p>Each district has ranks: <strong>Initiate</strong> (1+) → <strong>Third Gate</strong> (3+) → <strong>Sixth Path</strong> (6+ = spire) → <strong>Ninth Seal</strong> (9+ = gold crown).</p>
+      </div>
+    </div>
+    <div class="guide-legend-title">DISTRICT MAP</div>
+    <div class="guide-legend">
+      <div class="guide-legend-item" style="--lc:#c49a6c"><span class="guide-legend-dot"></span><span><strong>THE QUARTER</strong> · 12H fast · Sandy residential cluster</span></div>
+      <div class="guide-legend-item" style="--lc:#5bb8d4"><span class="guide-legend-dot"></span><span><strong>THE WARD</strong> · 24H fast · Modern glass towers</span></div>
+      <div class="guide-legend-item" style="--lc:#d4814a"><span class="guide-legend-dot"></span><span><strong>THE DISTRICT</strong> · 48H fast · Industrial arts lofts</span></div>
+      <div class="guide-legend-item" style="--lc:#b89fd8"><span class="guide-legend-dot"></span><span><strong>THE SECTOR</strong> · 72H fast · Civic government center</span></div>
+      <div class="guide-legend-item" style="--lc:#f0b840"><span class="guide-legend-dot"></span><span><strong>THE CITADEL</strong> · 144H fast · Gold landmark tower</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- ORDERS -->
+<section class="orders-section">
+  <div class="orders-grid" id="ordersGrid"></div>
+</section>
+
+<!-- CHRONICLE -->
+<section class="chronicle-section">
+  <div class="chron-header">
+    <h2>Chronicle</h2>
+    <span class="chron-count" id="chronCount">0 entries</span>
+  </div>
+  <div class="chron-log" id="chronLog">
+    <div class="chron-empty">The chronicle awaits your first cycle…</div>
+  </div>
+</section>
+
+<footer>JOURNEY — THE CYCLE PROTOCOL &nbsp;·&nbsp; Return to control, again and again, over time.</footer>
+
+<script>
+'use strict';
+
+/* ============================================================
+   ORDERS — warm LA palette
+============================================================ */
+const ORDERS = [
+  { id:'12h',  dur:12,  label:'12H',  district:'THE QUARTER',  color:'#c49a6c', rgb:'196,154,108' },
+  { id:'24h',  dur:24,  label:'24H',  district:'THE WARD',     color:'#5bb8d4', rgb:'91,184,212'  },
+  { id:'48h',  dur:48,  label:'48H',  district:'THE DISTRICT', color:'#d4814a', rgb:'212,129,74'  },
+  { id:'72h',  dur:72,  label:'72H',  district:'THE SECTOR',   color:'#b89fd8', rgb:'184,159,216' },
+  { id:'144h', dur:144, label:'144H', district:'THE CITADEL',  color:'#f0b840', rgb:'240,184,64'  },
+];
+
+/* ============================================================
+   LORE
+============================================================ */
+const LORE = {
+  start: [
+    'The foundation stones are set. The fast begins beneath the California sun.',
+    'Silence descends. The city watches and waits.',
+    'Another cycle opens. The architects record it in warm stone.',
+    'The district stirs. Phase locked. The tower ascends the skyline.',
+    'Control assumes its position. The city holds its breath.',
+    'The builders raise their tools. Time begins its measure.',
+    'A gate opens to the void. The fast holds it shut.',
+    'Phase engaged. The skyline leans into the golden hour.',
+  ],
+  seal: [
+    'The cycle closes. Another floor rises toward the LA sun.',
+    'Discipline honored. The city grows skyward.',
+    'Sealed and complete. The pattern holds.',
+    'The tower claims another level. The architects record the ascent.',
+    'A cycle returned to the record. One more floor claimed.',
+    'The seal is set. Structure solidifies against the dusk.',
+    'Completion claimed. The city etches another floor into the hillside.',
+    'The fast is honored. The building stands taller than yesterday.',
+  ],
+  void: [
+    'A fracture appears. The cycle breaks and the district absorbs the damage.',
+    'Structural damage recorded. The crack runs deep into the warm concrete.',
+    'The void is accepted. Red lines mark the failure in the facade.',
+    'Failure logged. The fissure will remain in the stone forever.',
+    'The discipline falters. Cracks split the stucco facade.',
+    'A fissure opens. This too is part of the permanent record.',
+    'The cycle breaks. The city endures the Santa Ana winds of failure.',
+    'Voided. The fracture lines are now permanent architecture.',
+  ],
+  early: [
+    'Phase-lock violated. Structural damage recorded in the foundation.',
+    'The seal is rejected — the phase is not complete. Crack logged.',
+    'Early breach noted. The tower fractures at its sun-baked base.',
+    'The architects refuse the seal. Structural integrity suffers.',
+    'Cannot seal — the vigil is unfinished. The crack is permanent.',
+    'Phase incomplete. The building records the attempt as structural damage.',
+  ],
+  rankUp: {
+    3: [
+      'Third Gate achieved. The pattern is no longer accident.',
+      'Three times returned. The district recognizes your name.',
+      'Third Gate: first proof of repetition. The city etches it in gold.',
+      'The gate opens at three. You have proven you can return.',
+    ],
+    6: [
+      'Sixth Path — the spire breaks the LA skyline.',
+      'Six cycles mastered. A spire crowns the tower above the smog line.',
+      'The Sixth Path is real. Structure solidifies into the golden skyline.',
+      'At six, the spire rises above the Hollywood Hills.',
+    ],
+    9: [
+      'Ninth Seal set. The crown burns gold over the basin forever.',
+      'Nine cycles. The building is complete. You are complete.',
+      'The Ninth Seal is permanent. The crown glows for all of Los Angeles.',
+      'Nine returns. Discipline internalized. The city belongs to you.',
+    ],
+  },
+  special144: 'Sovereign Architect — The Metropolis is complete. You are the city.',
+  recovery: [
+    'The district rests beneath the LA moon. The builders await.',
+    'Recovery phase ends. The district stands ready for the next ascent.',
+    'Stillness returns to the canyon. The city prepares.',
+  ],
+};
+
+function pickLore(pool) { return pool[Math.floor(Math.random() * pool.length)]; }
+
+/* ============================================================
+   RANK TIERS
+============================================================ */
+const RANKS = [
+  { min:9, name:'Ninth Seal',  sym:'◉', tier:9 },
+  { min:6, name:'Sixth Path',  sym:'◈', tier:6 },
+  { min:3, name:'Third Gate',  sym:'◇', tier:3 },
+  { min:1, name:'Initiate',    sym:'○', tier:1 },
+  { min:0, name:'Dormant',     sym:'·', tier:0 },
+];
+function getRank(cycles) { return RANKS.find(r => cycles >= r.min) || RANKS[RANKS.length-1]; }
+
+/* ============================================================
+   STATE
+============================================================ */
+const SK = 'journey_v2';
+let state = { orders:{}, chronicle:[], totalCycles:0, totalCracks:0 };
+
+function freshOrder() { return { cycles:0, cracks:0, phase:'idle', phaseStart:null, phaseEnd:null }; }
+
+function initState() {
+  try {
+    const raw = localStorage.getItem(SK);
+    if (raw) {
+      state = JSON.parse(raw);
+      ORDERS.forEach(o => { if (!state.orders[o.id]) state.orders[o.id] = freshOrder(); });
+      return;
+    }
+  } catch(err) {
+    console.warn('[Journey] Failed to restore saved state — starting fresh.', err);
+  }
+  state = { orders:{}, chronicle:[], totalCycles:0, totalCracks:0 };
+  ORDERS.forEach(o => { state.orders[o.id] = freshOrder(); });
+}
+function saveState() { try { localStorage.setItem(SK, JSON.stringify(state)); } catch(err) { console.warn('[Journey] Could not persist state.', err); } }
+
+/* ============================================================
+   CALCULATIONS
+============================================================ */
+function getMasteryBonus(orderId) {
+  const idx = ORDERS.findIndex(o => o.id === orderId);
+  if (idx <= 0) return 0;
+  let bonus = 0;
+  for (let i = 0; i < idx; i++) bonus += state.orders[ORDERS[i].id].cycles * (idx - i) * 0.5;
+  return Math.round(bonus * 10) / 10;
+}
+
+function getStability() {
+  const total = state.totalCycles + state.totalCracks;
+  return total === 0 ? 100 : Math.round((state.totalCycles / total) * 100);
+}
+
+function getIdentity() {
+  let best = { tier:0, dur:0, orderId:null, cycles:0 };
+  ORDERS.forEach(o => {
+    const r = getRank(state.orders[o.id].cycles);
+    if (r.tier > best.tier || (r.tier === best.tier && o.dur > best.dur))
+      best = { tier:r.tier, dur:o.dur, orderId:o.id, cycles:state.orders[o.id].cycles };
+  });
+  if (!best.orderId || best.tier === 0) return { title:'The Uninitiated', sub:'No cycles sealed. The city awaits.' };
+  if (best.tier === 9 && best.orderId === '144h') return { title:'Sovereign Architect', sub:LORE.special144 };
+  const oLabel = ORDERS.find(o => o.id === best.orderId).label;
+  const rank   = getRank(best.cycles);
+  if (best.tier === 9) return { title:`${rank.name} — ${oLabel}`, sub:`Nine cycles of ${best.dur}h. The crown burns.` };
+  if (best.tier === 6) return { title:`${rank.name} — ${oLabel}`, sub:`Six cycles of ${best.dur}h. The spire rises.` };
+  if (best.tier === 3) return { title:`${rank.name} — ${oLabel}`, sub:`Third Gate of ${best.dur}h. First proof of repetition.` };
+  return { title:`Initiate — ${oLabel}`, sub:`${best.cycles} cycle${best.cycles!==1?'s':''} sealed.` };
+}
+
+function getProgress(orderId) {
+  const os = state.orders[orderId];
+  if (os.phase !== 'fasting' || !os.phaseStart || !os.phaseEnd) return 0;
+  return Math.min(1, (Date.now() - os.phaseStart) / (os.phaseEnd - os.phaseStart));
+}
+function getRemaining(orderId) {
+  const os = state.orders[orderId];
+  return os.phaseEnd ? Math.max(0, os.phaseEnd - Date.now()) : 0;
+}
+function isComplete(orderId) {
+  const os = state.orders[orderId];
+  return os.phase === 'fasting' && os.phaseEnd && Date.now() >= os.phaseEnd;
+}
+function fmtMs(ms) {
+  if (ms <= 0) return '00:00:00';
+  const s = Math.floor(ms/1000), h = Math.floor(s/3600), m = Math.floor((s%3600)/60), sec = s%60;
+  return `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(sec).padStart(2,'0')}`;
+}
+function fmtNow() {
+  return new Date().toLocaleString('en-US',{month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'});
+}
+
+/* ============================================================
+   CHRONICLE
+============================================================ */
+function chronicle(icon, title, text, orderId) {
+  const o = ORDERS.find(x => x.id === orderId);
+  state.chronicle.unshift({ icon, title, text, color:o.color, ts:fmtNow() });
+  if (state.chronicle.length > 120) state.chronicle.length = 120;
+}
+
+/* ============================================================
+   ACTIONS
+============================================================ */
+function startFasting(orderId) {
+  const os = state.orders[orderId];
+  if (os.phase !== 'idle') return;
+  const o = ORDERS.find(x => x.id === orderId);
+  os.phase = 'fasting'; os.phaseStart = Date.now(); os.phaseEnd = Date.now() + o.dur * 3600000;
+  chronicle('▶', `${o.district}: Vigil commenced.`, pickLore(LORE.start), orderId);
+  saveState(); fullRender();
+}
+
+function sealCycle(orderId) {
+  const os = state.orders[orderId];
+  if (os.phase !== 'fasting') return;
+  const o = ORDERS.find(x => x.id === orderId), now = Date.now();
+  if (now < os.phaseEnd) {
+    os.cracks++; state.totalCracks++;
+    chronicle('⚡',`${o.district}: Phase-lock violated — early seal rejected.`, pickLore(LORE.early), orderId);
+    showNotif('crack','⚑ Phase incomplete — structural damage recorded');
+    saveState(); fullRender(); return;
+  }
+  const prevRank = getRank(os.cycles);
+  os.cycles++; state.totalCycles++;
+  const newRank = getRank(os.cycles);
+  os.phase = 'recovery'; os.phaseStart = now; os.phaseEnd = now + o.dur * 3600000;
+  let loreText = pickLore(LORE.seal);
+  if (newRank.tier > prevRank.tier) {
+    const pool = LORE.rankUp[newRank.tier];
+    if (pool) loreText = pickLore(pool);
+    if (orderId === '144h' && newRank.tier === 9) loreText = LORE.special144;
+    showNotif('milestone', `${newRank.sym} ${newRank.name} — ${o.label}`, loreText);
+    chronicle('🏛',`${o.district}: ${newRank.name} achieved.`, loreText, orderId);
+  } else {
+    chronicle('◆',`${o.district}: Cycle ${os.cycles} sealed.`, loreText, orderId);
+  }
+  saveState(); fullRender();
+}
+
+function voidCycle(orderId) {
+  const os = state.orders[orderId];
+  if (os.phase !== 'fasting') return;
+  const o = ORDERS.find(x => x.id === orderId);
+  os.cracks++; state.totalCracks++;
+  os.phase = 'idle'; os.phaseStart = null; os.phaseEnd = null;
+  chronicle('⚑',`${o.district}: Cycle voided.`, pickLore(LORE.void), orderId);
+  showNotif('crack','⚑ Cycle voided — crack recorded in the stone');
+  saveState(); fullRender();
+}
+
+function endRecovery(orderId) {
+  const os = state.orders[orderId];
+  if (os.phase !== 'recovery') return;
+  const o = ORDERS.find(x => x.id === orderId);
+  os.phase = 'idle'; os.phaseStart = null; os.phaseEnd = null;
+  chronicle('◎',`${o.district}: Recovery complete.`, pickLore(LORE.recovery), orderId);
+  saveState(); fullRender();
+}
+
+/* ============================================================
+   NOTIFICATIONS
+============================================================ */
+function showNotif(type, line1, line2) {
+  document.querySelectorAll('.notif').forEach(n => n.remove());
+  const el = document.createElement('div');
+  el.className = `notif notif-${type}`;
+  el.innerHTML = type === 'milestone'
+    ? `<div>${line1}</div>${line2?`<div class="nm-sub">${line2}</div>`:''}`
+    : line1;
+  document.body.appendChild(el);
+  setTimeout(() => el.remove(), type === 'milestone' ? 5500 : 3200);
+}
+
+/* ============================================================
+   CANVAS — ISOMETRIC CITY  (SimCity-quality)
+============================================================ */
+const canvas = document.getElementById('cityCanvas');
+const ctx    = canvas.getContext('2d');
+let stars = [], frame = 0;
+
+/* Tile dimensions (updated on resize) */
+let TW = 56, TH = 28;
+
+/* Layout & rendering constants */
+const CANVAS_TILE_RATIO  = 18;   // approx tiles fitting across canvas width
+const STAR_DENSITY_DIVISOR = 3000;
+const MAX_VISUAL_CYCLES  = 12;   // building height stops growing at 12 cycles
+const SPIRE_BASE_RATIO   = 0.20;
+const SPIRE_BASE_HEIGHT  = 54;
+const SPIRE_SCALE_FACTOR = 17;
+const MAX_GRID_SUM       = 18;   // 9+9 grid bounds
+/* Beacon blinks on/off: true when sin(frame * speed) > this threshold */
+const BEACON_BLINK_THRESHOLD = 0.55;
+/* Citadel sovereign aura ring definitions [radius, alpha-base, alpha-amp, lw] */
+const SOVEREIGN_RINGS = [
+  { r: 28, aBase: 0.40, aAmp: 0.24, phase: 0.00, lw: 2.0 },
+  { r: 44, aBase: 0.20, aAmp: 0.18, phase: 1.60, lw: 1.5 },
+  { r: 62, aBase: 0.10, aAmp: 0.10, phase: 3.20, lw: 1.0 },
+];
+
+/* -- Seeded PRNG -- */
+function seededRand(seed) {
+  let s = seed;
+  return () => { s = (s * 9301 + 49297) % 233280; return s / 233280; };
+}
+
+function resizeCanvas() {
+  const W = canvas.offsetWidth || window.innerWidth;
+  const H = Math.round(Math.max(480, Math.min(640, W * 0.44)));
+  canvas.width = W; canvas.height = H;
+  TW = Math.max(44, Math.min(78, W / CANVAS_TILE_RATIO));
+  TH = TW / 2;
+}
+
+function genStars() {
+  stars = [];
+  const n = Math.floor(canvas.width * canvas.height / STAR_DENSITY_DIVISOR);
+  for (let i = 0; i < n; i++) {
+    stars.push({
+      x: Math.random() * canvas.width,
+      y: Math.random() * canvas.height * 0.60,
+      r: Math.random() * 1.3 + 0.3,
+      b: Math.random() * 0.5 + 0.2,
+      s: Math.random() * Math.PI * 2,
+    });
+  }
+}
+
+/* -- Color helper -- */
+function rgba(hex, a) {
+  const r = parseInt(hex.slice(1,3),16), g = parseInt(hex.slice(3,5),16), b = parseInt(hex.slice(5,7),16);
+  return `rgba(${r},${g},${b},${a})`;
+}
+
+/* ============================================================
+   ISOMETRIC PROJECTION
+   gx → right+down, gy → left+down, gz → up
+============================================================ */
+function isoP(gx, gy, gz, ox, oy) {
+  return {
+    x: ox + (gx - gy) * (TW / 2),
+    y: oy + (gx + gy) * (TH / 2) - gz,
+  };
+}
+
+function isoPoly(pts, fillStyle) {
+  if (pts.length < 3) return;
+  ctx.beginPath();
+  ctx.moveTo(pts[0].x, pts[0].y);
+  for (let i = 1; i < pts.length; i++) ctx.lineTo(pts[i].x, pts[i].y);
+  ctx.closePath();
+  ctx.fillStyle = fillStyle;
+  ctx.fill();
+}
+
+function isoEdge(pts, strokeStyle, lw) {
+  ctx.beginPath();
+  ctx.moveTo(pts[0].x, pts[0].y);
+  for (let i = 1; i < pts.length; i++) ctx.lineTo(pts[i].x, pts[i].y);
+  ctx.closePath();
+  ctx.strokeStyle = strokeStyle;
+  ctx.lineWidth = lw || 0.5;
+  ctx.stroke();
+}
+
+/* ============================================================
+   GROUND TILE
+============================================================ */
+function drawGroundTile(gx, gy, fillStyle, ox, oy, edgeCol) {
+  const A = isoP(gx,   gy,   0, ox, oy);
+  const B = isoP(gx+1, gy,   0, ox, oy);
+  const C = isoP(gx+1, gy+1, 0, ox, oy);
+  const D = isoP(gx,   gy+1, 0, ox, oy);
+  isoPoly([A, B, C, D], fillStyle);
+  isoEdge([A, B, C, D], edgeCol || 'rgba(0,0,0,0.18)', 0.4);
+}
+
+/* ============================================================
+   ISOMETRIC BUILDING BOX  (3 visible faces)
+   Right = lit SE face, Left = shadow SW face, Top = roof
+============================================================ */
+function drawIsoBox(gx, gy, bw, bd, h, colTop, colRight, colLeft, ox, oy) {
+  const A  = isoP(gx,    gy,    0, ox, oy);
+  const B  = isoP(gx+bw, gy,    0, ox, oy);
+  const D  = isoP(gx,    gy+bd, 0, ox, oy);
+  const At = isoP(gx,    gy,    h, ox, oy);
+  const Bt = isoP(gx+bw, gy,    h, ox, oy);
+  const Ct = isoP(gx+bw, gy+bd, h, ox, oy);
+  const Dt = isoP(gx,    gy+bd, h, ox, oy);
+
+  /* Right face (lit) */
+  isoPoly([A, B, Bt, At], colRight);
+  isoEdge([A, B, Bt, At], 'rgba(0,0,0,0.25)', 0.5);
+  /* Left face (shadow) */
+  isoPoly([A, D, Dt, At], colLeft);
+  isoEdge([A, D, Dt, At], 'rgba(0,0,0,0.20)', 0.5);
+  /* Top / roof (brightest) */
+  isoPoly([At, Bt, Ct, Dt], colTop);
+  isoEdge([At, Bt, Ct, Dt], 'rgba(0,0,0,0.20)', 0.5);
+
+  /* Horizontal floor bands — gives the building story-by-story depth */
+  if (h > 28) {
+    const bands = Math.min(9, Math.floor(h / 20));
+    for (let i = 1; i <= bands; i++) {
+      const bz = (i / (bands + 1)) * h;
+      /* Right face band */
+      const bRL = isoP(gx,    gy, bz, ox, oy);
+      const bRR = isoP(gx+bw, gy, bz, ox, oy);
+      ctx.beginPath(); ctx.moveTo(bRL.x, bRL.y); ctx.lineTo(bRR.x, bRR.y);
+      ctx.strokeStyle = 'rgba(255,255,255,0.07)'; ctx.lineWidth = 0.6; ctx.stroke();
+      /* Left face band */
+      const bLL = isoP(gx, gy,    bz, ox, oy);
+      const bLR = isoP(gx, gy+bd, bz, ox, oy);
+      ctx.beginPath(); ctx.moveTo(bLL.x, bLL.y); ctx.lineTo(bLR.x, bLR.y);
+      ctx.strokeStyle = 'rgba(255,255,255,0.04)'; ctx.lineWidth = 0.6; ctx.stroke();
+    }
+  }
+}
+
+/* ============================================================
+   ARCHITECTURAL LEDGE  (horizontal setback band)
+============================================================ */
+function drawIsoLedge(gx, gy, bw, bd, z, col, ox, oy) {
+  const ext = 0.07, lh = 4;
+  const A  = isoP(gx-ext,    gy-ext,    z,    ox, oy);
+  const B  = isoP(gx+bw+ext, gy-ext,    z,    ox, oy);
+  const D  = isoP(gx-ext,    gy+bd+ext, z,    ox, oy);
+  const At = isoP(gx-ext,    gy-ext,    z+lh, ox, oy);
+  const Bt = isoP(gx+bw+ext, gy-ext,    z+lh, ox, oy);
+  const Ct = isoP(gx+bw+ext, gy+bd+ext, z+lh, ox, oy);
+  const Dt = isoP(gx-ext,    gy+bd+ext, z+lh, ox, oy);
+  isoPoly([A, B, Bt, At], col);
+  isoPoly([A, D, Dt, At], rgba(col, 0.75));
+  isoPoly([At, Bt, Ct, Dt], col);
+  isoEdge([At, Bt, Ct, Dt], 'rgba(0,0,0,0.22)', 0.5);
+}
+
+/* ============================================================
+   WINDOWS  (style: 'glass' | 'grid' | 'industrial')
+============================================================ */
+function drawIsoWindows(gx, gy, bw, bd, h, distColor, seed, winStyle, ox, oy) {
+  if (h < 16) return;
+  const cr = parseInt(distColor.slice(1,3),16);
+  const cg = parseInt(distColor.slice(3,5),16);
+  const cb = parseInt(distColor.slice(5,7),16);
+
+  /* lit window color: district color + warm amber boost */
+  const litCol   = `rgba(${Math.min(255,cr+130)},${Math.min(255,cg+100)},${Math.min(255,cb+40)},0.95)`;
+  const litDim   = `rgba(${Math.min(255,cr+70)},${Math.min(255,cg+55)},${Math.min(255,cb+20)},0.70)`;
+  const unlitCol = 'rgba(4,3,10,0.78)';
+
+  /* per-style sizing */
+  const ww = winStyle === 'glass' ? 5 : 3;
+  const wh = winStyle === 'glass' ? 3 : 3;
+  const cpw = winStyle === 'glass' ? 1.6 : winStyle === 'industrial' ? 1.2 : 2.6;
+  const rph = winStyle === 'glass' ? 28 : winStyle === 'industrial' ? 34 : 22;
+
+  function drawFace(A, B, At, cpwF, cols, rows, litMask) {
+    for (let row = 0; row < rows; row++) {
+      for (let col = 0; col < cols; col++) {
+        const lit  = ((seed * litMask + row * 31 + col * 17) % 4) !== 0;
+        /* occasional flicker */
+        const flick = ((seed * 3 + row * 7 + col * 11) % 18 === 0)
+                   && (Math.sin(frame * 0.09 + row * 0.5) > 0.5);
+        const u  = (col + 0.55) / cols;
+        const v  = (row + 0.28) / rows;
+        const px = A.x + (B.x - A.x) * u + (At.x - A.x) * v;
+        const py = A.y + (B.y - A.y) * u + (At.y - A.y) * v;
+        ctx.fillStyle = flick ? 'rgba(255,210,110,0.6)' : lit ? litCol : unlitCol;
+        ctx.fillRect(px - ww * 0.5, py - wh * 0.5, ww, wh);
+      }
+    }
+  }
+
+  /* right face */
+  const AR  = isoP(gx,    gy, 0, ox, oy);
+  const BR  = isoP(gx+bw, gy, 0, ox, oy);
+  const AtR = isoP(gx,    gy, h, ox, oy);
+  const colsR = Math.max(1, Math.ceil(bw * cpw));
+  const rows  = Math.max(1, Math.ceil(h / rph));
+  drawFace(AR, BR, AtR, cpw, colsR, rows, 7);
+
+  /* left face — slightly dimmer */
+  const AL  = isoP(gx, gy,    0, ox, oy);
+  const DL  = isoP(gx, gy+bd, 0, ox, oy);
+  const AtL = isoP(gx, gy,    h, ox, oy);
+  const colsL = Math.max(1, Math.ceil(bd * cpw));
+  const origLit = litCol;
+  /* reuse drawFace but with dimmer lit color via temporary override */
+  for (let row = 0; row < rows; row++) {
+    for (let col = 0; col < colsL; col++) {
+      const lit = ((seed * 11 + row * 23 + col * 37) % 4) !== 0;
+      const u   = (col + 0.55) / colsL;
+      const v   = (row + 0.28) / rows;
+      const px  = AL.x + (DL.x - AL.x) * u + (AtL.x - AL.x) * v;
+      const py  = AL.y + (DL.y - AL.y) * u + (AtL.y - AL.y) * v;
+      ctx.fillStyle = lit ? litDim : unlitCol;
+      ctx.fillRect(px - ww * 0.5, py - wh * 0.5, ww, wh);
+    }
+  }
+}
+
+/* ============================================================
+   CRACK LINES  (on shadow/left face)
+============================================================ */
+function drawIsoCracks(gx, gy, bd, h, numCracks, seed, ox, oy) {
+  if (numCracks <= 0 || h < 12) return;
+  const A  = isoP(gx, gy,    0, ox, oy);
+  const D  = isoP(gx, gy+bd, 0, ox, oy);
+  const At = isoP(gx, gy,    h, ox, oy);
+  const Dt = isoP(gx, gy+bd, h, ox, oy);
+  ctx.save();
+  ctx.beginPath();
+  ctx.moveTo(A.x,A.y); ctx.lineTo(D.x,D.y); ctx.lineTo(Dt.x,Dt.y); ctx.lineTo(At.x,At.y);
+  ctx.closePath(); ctx.clip();
+  for (let i = 0; i < Math.min(numCracks, 6); i++) {
+    const u0 = ((seed * 13 + i * 37) % 70 + 15) / 100;
+    const v0 = ((seed * 7  + i * 23) % 35 + 10) / 100;
+    let px = A.x + (D.x - A.x) * u0 + (At.x - A.x) * v0;
+    let py = A.y + (D.y - A.y) * u0 + (At.y - A.y) * v0;
+    ctx.beginPath(); ctx.moveTo(px, py);
+    for (let seg = 0; seg < 8; seg++) {
+      const du = ((seed * 11 + i * 29 + seg * 17) % 22 - 11) / 72;
+      const dv = ((seed * 17 + i * 13 + seg * 31) % 14 + 3) / 100;
+      px += (D.x - A.x) * du + (At.x - A.x) * dv;
+      py += (D.y - A.y) * du + (At.y - A.y) * dv;
+      ctx.lineTo(px, py);
+    }
+    ctx.strokeStyle = '#e03030'; ctx.lineWidth = 1.5; ctx.globalAlpha = 0.96; ctx.stroke();
+    ctx.globalAlpha = 1;
+  }
+  ctx.restore();
+}
+
+/* ============================================================
+   TREE  (layered isometric cone)
+============================================================ */
+function drawIsoTree(gx, gy, scale, ox, oy) {
+  const h  = 30 * scale;
+  const cx = gx + 0.5, cy = gy + 0.5;
+
+  /* trunk */
+  const tBase = isoP(cx, cy, 0,       ox, oy);
+  const tTop  = isoP(cx, cy, h * 0.3, ox, oy);
+  ctx.beginPath(); ctx.moveTo(tBase.x, tBase.y); ctx.lineTo(tTop.x, tTop.y);
+  ctx.strokeStyle = '#3e2010'; ctx.lineWidth = 2; ctx.stroke();
+
+  /* 3 canopy layers, bottom→top */
+  const layers = [
+    { sz: 0.36 * scale, zBase: h * 0.22, zTip: h * 0.60, col: '#1a4a18' },
+    { sz: 0.28 * scale, zBase: h * 0.48, zTip: h * 0.78, col: '#236622' },
+    { sz: 0.17 * scale, zBase: h * 0.64, zTip: h * 0.96, col: '#2e8832' },
+  ];
+  layers.forEach(l => {
+    const A  = isoP(cx - l.sz, cy,        l.zBase, ox, oy);
+    const B  = isoP(cx,        cy - l.sz, l.zBase, ox, oy);
+    const C  = isoP(cx + l.sz, cy,        l.zBase, ox, oy);
+    const D  = isoP(cx,        cy + l.sz, l.zBase, ox, oy);
+    const T  = isoP(cx,        cy,        l.zTip,  ox, oy);
+    isoPoly([B, C, T], l.col);
+    isoPoly([C, D, T], rgba(l.col, 0.78));
+    isoPoly([D, A, T], rgba(l.col, 0.62));
+    isoPoly([A, B, T], rgba(l.col, 0.88));
+  });
+}
+
+/* ============================================================
+   ROOFTOP HVAC BOX
+============================================================ */
+function drawIsoRooftopBox(gx, gy, bw, bd, roofZ, roofCol, ox, oy) {
+  const bx  = gx + bw * 0.18, by = gy + bd * 0.18;
+  const bww = bw * 0.45, bdd = bd * 0.45, bh = 5;
+  drawIsoBox(bx, by, bww, bdd, bh, roofCol, rgba(roofCol, 0.80), rgba(roofCol, 0.60), ox, oy);
+}
+
+/* ============================================================
+   WATER TOWER  (hexagonal industrial tank)
+============================================================ */
+function drawIsoWaterTower(gx, gy, bw, bd, roofZ, ox, oy) {
+  const cx = gx + bw * 0.75, cy = gy + bd * 0.25;
+  const r  = 0.22, h = 24;
+  const tankZ = roofZ + 3;
+
+  /* 3 support legs */
+  for (let i = 0; i < 3; i++) {
+    const ang  = (i / 3) * Math.PI * 2;
+    const foot = isoP(cx + Math.cos(ang) * r * 1.3, cy + Math.sin(ang) * r * 0.65, roofZ, ox, oy);
+    const top2 = isoP(cx, cy, tankZ + h * 0.5, ox, oy);
+    ctx.beginPath(); ctx.moveTo(foot.x, foot.y); ctx.lineTo(top2.x, top2.y);
+    ctx.strokeStyle = '#5a3018'; ctx.lineWidth = 1.5; ctx.stroke();
+  }
+
+  /* hex tank sides */
+  const sides = 6;
+  for (let i = 0; i < sides; i++) {
+    const a1  = (i / sides) * Math.PI * 2;
+    const a2  = ((i + 1) / sides) * Math.PI * 2;
+    const p1  = isoP(cx + Math.cos(a1) * r, cy + Math.sin(a1) * r * 0.5, tankZ, ox, oy);
+    const p2  = isoP(cx + Math.cos(a2) * r, cy + Math.sin(a2) * r * 0.5, tankZ, ox, oy);
+    const p1t = isoP(cx + Math.cos(a1) * r, cy + Math.sin(a1) * r * 0.5, tankZ + h * 0.38, ox, oy);
+    const p2t = isoP(cx + Math.cos(a2) * r, cy + Math.sin(a2) * r * 0.5, tankZ + h * 0.38, ox, oy);
+    const bright = 0.45 + 0.55 * Math.max(0, Math.cos(a1 + 0.9));
+    ctx.fillStyle = `rgba(${Math.round(80 + bright*48)},${Math.round(48 + bright*28)},${Math.round(18 + bright*10)},0.92)`;
+    isoPoly([p1, p2, p2t, p1t], ctx.fillStyle);
+  }
+
+  /* conical roof */
+  const tipPt = isoP(cx, cy, tankZ + h * 0.55, ox, oy);
+  for (let i = 0; i < sides; i++) {
+    const a1  = (i / sides) * Math.PI * 2;
+    const a2  = ((i + 1) / sides) * Math.PI * 2;
+    const p1t = isoP(cx + Math.cos(a1) * r, cy + Math.sin(a1) * r * 0.5, tankZ + h * 0.38, ox, oy);
+    const p2t = isoP(cx + Math.cos(a2) * r, cy + Math.sin(a2) * r * 0.5, tankZ + h * 0.38, ox, oy);
+    ctx.fillStyle = '#3a2010';
+    isoPoly([p1t, p2t, tipPt], ctx.fillStyle);
+  }
+}
+
+/* ============================================================
+   STREET LIGHT
+============================================================ */
+function drawIsoStreetlight(gx, gy, ox, oy) {
+  const base = isoP(gx, gy, 0,  ox, oy);
+  const top  = isoP(gx, gy, 38, ox, oy);
+  const lamp = isoP(gx - 0.18, gy, 38, ox, oy);
+
+  ctx.beginPath(); ctx.moveTo(base.x, base.y); ctx.lineTo(top.x, top.y);
+  ctx.strokeStyle = '#6a6888'; ctx.lineWidth = 1.5; ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(top.x, top.y); ctx.lineTo(lamp.x, lamp.y);
+  ctx.strokeStyle = '#6a6888'; ctx.lineWidth = 1; ctx.stroke();
+
+  /* warm amber glow (animated subtle pulse) */
+  const gp  = 0.42 + 0.18 * Math.sin(frame * 0.028);
+  const lgl = ctx.createRadialGradient(lamp.x, lamp.y, 0, lamp.x, lamp.y, 9);
+  lgl.addColorStop(0, `rgba(255,215,130,${gp})`);
+  lgl.addColorStop(1, 'transparent');
+  ctx.fillStyle = lgl; ctx.beginPath(); ctx.arc(lamp.x, lamp.y, 9, 0, Math.PI * 2); ctx.fill();
+  ctx.beginPath(); ctx.arc(lamp.x, lamp.y, 2.2, 0, Math.PI * 2);
+  ctx.fillStyle = '#ffec90'; ctx.fill();
+}
+
+/* ============================================================
+   SPIRE  (rank 6+)
+============================================================ */
+function drawIsoSpire(gx, gy, bw, bd, topZ, color, ox, oy) {
+  const cx = gx + bw / 2, cy = gy + bd / 2;
+  const r  = Math.min(bw, bd) * SPIRE_BASE_RATIO;
+  const spireH = topZ + SPIRE_BASE_HEIGHT + Math.min(bw, bd) * SPIRE_SCALE_FACTOR;
+  const tipPt  = isoP(cx, cy, spireH, ox, oy);
+  const bA = isoP(cx,   cy-r, topZ, ox, oy);
+  const bB = isoP(cx+r, cy,   topZ, ox, oy);
+  const bC = isoP(cx,   cy+r, topZ, ox, oy);
+  const bD = isoP(cx-r, cy,   topZ, ox, oy);
+  isoPoly([bA, bB, tipPt], rgba(color, 0.96));
+  isoPoly([bB, bC, tipPt], rgba(color, 0.72));
+  isoPoly([bC, bD, tipPt], rgba(color, 0.48));
+  isoPoly([bD, bA, tipPt], rgba(color, 0.80));
+  ctx.shadowBlur = 22; ctx.shadowColor = color;
+  ctx.beginPath(); ctx.arc(tipPt.x, tipPt.y, 3.5, 0, Math.PI * 2);
+  ctx.fillStyle = color; ctx.fill();
+  ctx.shadowBlur = 0;
+  /* blinking red aviation beacon (uses shared constant) */
+  if (Math.sin(frame * 0.14) > BEACON_BLINK_THRESHOLD) {
+    ctx.beginPath(); ctx.arc(tipPt.x, tipPt.y, 2.2, 0, Math.PI * 2);
+    ctx.fillStyle = 'rgba(255,55,55,0.95)'; ctx.fill();
+  }
+}
+
+/* ============================================================
+   CROWN  (rank 9)
+============================================================ */
+function drawIsoCrown(gx, gy, bw, bd, topZ, ox, oy) {
+  const cx     = gx + bw / 2, cy = gy + bd / 2;
+  const spireH = topZ + SPIRE_BASE_HEIGHT + Math.min(bw, bd) * SPIRE_SCALE_FACTOR;
+  const tip    = isoP(cx, cy, spireH, ox, oy);
+  const pulse  = 1 + 0.16 * Math.sin(frame * 0.04);
+  const r      = 9 * pulse;
+  const ag     = ctx.createRadialGradient(tip.x, tip.y, 0, tip.x, tip.y, r * 5.5);
+  ag.addColorStop(0,    'rgba(255,215,72,0.94)');
+  ag.addColorStop(0.30, 'rgba(240,160,30,0.48)');
+  ag.addColorStop(0.65, 'rgba(220,100,20,0.18)');
+  ag.addColorStop(1,    'transparent');
+  ctx.fillStyle = ag; ctx.beginPath(); ctx.arc(tip.x, tip.y, r * 5.5, 0, Math.PI * 2); ctx.fill();
+  ctx.beginPath(); ctx.arc(tip.x, tip.y, r, 0, Math.PI * 2);
+  ctx.fillStyle = '#f0c840'; ctx.fill();
+  ctx.strokeStyle = '#ffd060'; ctx.lineWidth = 2; ctx.stroke();
+}
+
+/* ============================================================
+   BUILDING HEIGHT
+============================================================ */
+function bldH(cycles, base, pf) { return base + Math.min(cycles, MAX_VISUAL_CYCLES) * pf; }
+
+/* ============================================================
+   ISOMETRIC CITY  — dense SimCity-like layout
+   ──────────────────────────────────────────────────────────
+   Grid  : 10 × 10, roads at gx=4 (N-S) and gy=4 (E-W)
+   Draw order (back→front by gx+gy):
+     QUARTER → WARD → DISTRICT → CITADEL → SECTOR
+   ──────────────────────────────────────────────────────────
+   Building types: 'shop' 'house' 'apartment' 'office'
+                   'tower' 'warehouse' 'civic' 'monument'
+   winStyle      : 'glass' 'grid' 'industrial'
+   rooftop       : 'hvac' 'watertower' 'antenna' null
+   ledges        : array of fractional heights [0..1]
+============================================================ */
+const ISO_CITY = {
+  /* ──  THE QUARTER (12h) — LA Residential / Warm Stucco  ── */
+  '12h': {
+    pal: { wallR:'#c8925c', wallL:'#a8703c', roof:'#7a3410' },
+    buildings: [
+      { gx:0, gy:0, bw:2, bd:2, type:'apartment', base:28, pf:18, hm:1.00, seed:12,  ledges:[0.54],      rooftop:'hvac'      },
+      { gx:2, gy:0, bw:1, bd:1, type:'shop',      base:14, pf: 6, hm:1.00, seed:23,  ledges:[],          rooftop:null        },
+      { gx:3, gy:0, bw:1, bd:2, type:'house',     base:22, pf:13, hm:1.00, seed:34,  ledges:[0.60],      rooftop:null        },
+      { gx:0, gy:2, bw:1, bd:1, type:'house',     base:18, pf: 9, hm:1.00, seed:45,  ledges:[],          rooftop:null        },
+      { gx:1, gy:2, bw:1, bd:1, type:'shop',      base:12, pf: 5, hm:1.00, seed:56,  ledges:[],          rooftop:null        },
+      { gx:2, gy:2, bw:2, bd:1, type:'apartment', base:24, pf:14, hm:0.84, seed:67,  ledges:[],          rooftop:null        },
+      { gx:0, gy:3, bw:1, bd:1, type:'shop',      base:13, pf: 5, hm:1.00, seed:78,  ledges:[],          rooftop:null        },
+      { gx:1, gy:3, bw:1, bd:1, type:'house',     base:16, pf: 8, hm:1.00, seed:89,  ledges:[],          rooftop:null        },
+      { gx:2, gy:3, bw:2, bd:1, type:'house',     base:17, pf: 8, hm:1.00, seed:100, ledges:[],          rooftop:null        },
+    ],
+    trees:  [{ gx:3.1, gy:2.2, s:0.90 }, { gx:3.2, gy:3.2, s:0.78 }, { gx:0.2, gy:3.6, s:0.65 }],
+    lights: [{ gx:3.8, gy:0.3 }],
+  },
+
+  /* ──  THE WARD (24h) — Modern Glass / Commercial  ── */
+  '24h': {
+    pal: { wallR:'#4a92ac', wallL:'#2e6878', roof:'#18364c' },
+    buildings: [
+      { gx:5, gy:0, bw:2, bd:2, type:'office',    base:38, pf:24, hm:1.00, seed:24,  ledges:[0.40,0.70], rooftop:'hvac'      },
+      { gx:7, gy:0, bw:1, bd:2, type:'tower',     base:34, pf:21, hm:0.92, seed:35,  ledges:[0.55],      rooftop:'antenna'   },
+      { gx:8, gy:0, bw:1, bd:1, type:'shop',      base:16, pf: 7, hm:1.00, seed:46,  ledges:[],          rooftop:null        },
+      { gx:5, gy:2, bw:2, bd:1, type:'office',    base:30, pf:18, hm:0.82, seed:57,  ledges:[0.50],      rooftop:'hvac'      },
+      { gx:7, gy:2, bw:1, bd:1, type:'shop',      base:17, pf: 8, hm:1.00, seed:68,  ledges:[],          rooftop:null        },
+      { gx:8, gy:2, bw:1, bd:2, type:'tower',     base:32, pf:20, hm:0.88, seed:79,  ledges:[0.58],      rooftop:'antenna'   },
+      { gx:5, gy:3, bw:2, bd:1, type:'office',    base:22, pf:12, hm:0.68, seed:90,  ledges:[],          rooftop:null        },
+      { gx:7, gy:3, bw:1, bd:1, type:'shop',      base:14, pf: 6, hm:1.00, seed:101, ledges:[],          rooftop:null        },
+    ],
+    trees:  [{ gx:8.2, gy:0.3, s:0.72 }, { gx:8.3, gy:3.3, s:0.82 }],
+    lights: [{ gx:5.2, gy:0.2 }, { gx:8.8, gy:3.8 }],
+  },
+
+  /* ──  THE DISTRICT (48h) — Arts / Industrial  ── */
+  '48h': {
+    pal: { wallR:'#aa4430', wallL:'#882a1a', roof:'#2a1008' },
+    buildings: [
+      { gx:0, gy:5, bw:3, bd:2, type:'warehouse', base:24, pf:14, hm:1.00, seed:48,  ledges:[],          rooftop:'watertower'},
+      { gx:3, gy:5, bw:1, bd:1, type:'shop',      base:16, pf: 7, hm:1.00, seed:59,  ledges:[],          rooftop:null        },
+      { gx:0, gy:7, bw:2, bd:1, type:'apartment', base:22, pf:13, hm:1.00, seed:60,  ledges:[0.55],      rooftop:'hvac'      },
+      { gx:2, gy:6, bw:1, bd:2, type:'house',     base:20, pf:11, hm:1.00, seed:71,  ledges:[],          rooftop:null        },
+      { gx:3, gy:6, bw:1, bd:1, type:'shop',      base:13, pf: 5, hm:1.00, seed:82,  ledges:[],          rooftop:null        },
+      { gx:3, gy:7, bw:1, bd:1, type:'shop',      base:14, pf: 6, hm:1.00, seed:93,  ledges:[],          rooftop:null        },
+      { gx:0, gy:8, bw:2, bd:1, type:'warehouse', base:18, pf:10, hm:1.00, seed:104, ledges:[],          rooftop:null        },
+      { gx:2, gy:8, bw:2, bd:1, type:'house',     base:16, pf: 8, hm:1.00, seed:115, ledges:[],          rooftop:null        },
+    ],
+    trees:  [{ gx:3.3, gy:8.2, s:0.78 }, { gx:0.3, gy:8.6, s:0.64 }],
+    lights: [{ gx:0.2, gy:5.2 }],
+  },
+
+  /* ──  THE SECTOR (72h) — Civic / Government  ── */
+  '72h': {
+    pal: { wallR:'#8070b8', wallL:'#5858a0', roof:'#38306a' },
+    buildings: [
+      { gx:5, gy:5, bw:3, bd:2, type:'civic',     base:36, pf:22, hm:1.00, seed:72,  ledges:[0.36,0.66], rooftop:'hvac'      },
+      { gx:8, gy:5, bw:1, bd:1, type:'shop',      base:16, pf: 7, hm:1.00, seed:83,  ledges:[],          rooftop:null        },
+      { gx:5, gy:7, bw:2, bd:1, type:'apartment', base:24, pf:14, hm:0.84, seed:94,  ledges:[0.54],      rooftop:'hvac'      },
+      { gx:7, gy:6, bw:1, bd:2, type:'tower',     base:30, pf:18, hm:1.00, seed:105, ledges:[0.50],      rooftop:'antenna'   },
+      { gx:8, gy:6, bw:1, bd:1, type:'shop',      base:14, pf: 6, hm:1.00, seed:116, ledges:[],          rooftop:null        },
+      { gx:8, gy:7, bw:1, bd:1, type:'shop',      base:13, pf: 5, hm:1.00, seed:127, ledges:[],          rooftop:null        },
+      { gx:5, gy:8, bw:3, bd:1, type:'civic',     base:20, pf:12, hm:0.72, seed:138, ledges:[],          rooftop:null        },
+      { gx:8, gy:8, bw:1, bd:1, type:'shop',      base:12, pf: 5, hm:1.00, seed:149, ledges:[],          rooftop:null        },
+    ],
+    trees:  [{ gx:8.2, gy:5.2, s:0.88 }, { gx:7.2, gy:8.3, s:0.76 }, { gx:5.3, gy:8.5, s:0.64 }],
+    lights: [{ gx:5.2, gy:5.2 }],
+  },
+
+  /* ──  THE CITADEL (144h) — Landmark Gold Skyscraper  ── */
+  '144h': {
+    pal: { wallR:'#c89820', wallL:'#a07810', roof:'#7a5c00' },
+    buildings: [
+      { gx:4, gy:4, bw:2, bd:2, type:'monument',  base:52, pf:30, hm:1.00, seed:144, ledges:[0.30,0.55,0.75], rooftop:'hvac' },
+      { gx:3.6, gy:6.1, bw:0.9, bd:0.9, type:'office', base:26, pf:14, hm:0.58, seed:155, ledges:[0.50], rooftop:null },
+      { gx:6.1, gy:3.6, bw:0.9, bd:0.9, type:'office', base:24, pf:12, hm:0.52, seed:166, ledges:[0.50], rooftop:null },
+    ],
+    trees:  [],
+    lights: [{ gx:3.8, gy:3.8 }],
+  },
+};
+
+/* ============================================================
+   DISTRICT RENDERER
+============================================================ */
+function drawIsoDistrict(order, os, ox, oy) {
+  const def    = ISO_CITY[order.id];
+  const cycles = os.cycles;
+  const cracks = os.cracks;
+  const active = os.phase === 'fasting';
+  const pal    = def.pal;
+
+  /* street lights (drawn under buildings) */
+  if (cycles >= 1) def.lights.forEach(l => drawIsoStreetlight(l.gx, l.gy, ox, oy));
+
+  def.buildings.forEach((b, bi) => {
+    const height = bldH(cycles, b.base, b.pf) * b.hm;
+    const isMain = bi === 0;
+
+    /* active fasting glow beneath main building */
+    if (active && isMain) {
+      const pulse  = 0.13 + 0.10 * Math.sin(frame * 0.05);
+      const midPt  = isoP(b.gx + b.bw * 0.5, b.gy + b.bd * 0.5, height * 0.35, ox, oy);
+      const gl     = ctx.createRadialGradient(midPt.x, midPt.y, 0, midPt.x, midPt.y, TW * 4.2);
+      gl.addColorStop(0, rgba(order.color, pulse * 0.88));
+      gl.addColorStop(1, 'transparent');
+      ctx.fillStyle = gl;
+      ctx.fillRect(midPt.x - TW * 4.2, midPt.y - TW * 4.2, TW * 8.4, TW * 8.4);
+    }
+
+    /* ledge bands (architectural setbacks, behind main box) */
+    b.ledges.forEach(frac => drawIsoLedge(b.gx, b.gy, b.bw, b.bd, height * frac, pal.wallR, ox, oy));
+
+    /* building box */
+    drawIsoBox(b.gx, b.gy, b.bw, b.bd, height, pal.roof, pal.wallR, pal.wallL, ox, oy);
+
+    /* district color tint overlay on faces */
+    const A  = isoP(b.gx,      b.gy,      0,      ox, oy);
+    const B  = isoP(b.gx+b.bw, b.gy,      0,      ox, oy);
+    const D  = isoP(b.gx,      b.gy+b.bd, 0,      ox, oy);
+    const At = isoP(b.gx,      b.gy,      height, ox, oy);
+    const Bt = isoP(b.gx+b.bw, b.gy,      height, ox, oy);
+    const Ct = isoP(b.gx+b.bw, b.gy+b.bd, height, ox, oy);
+    const Dt = isoP(b.gx,      b.gy+b.bd, height, ox, oy);
+    isoPoly([A, B, Bt, At],   rgba(order.color, 0.06));
+    isoPoly([A, D, Dt, At],   rgba(order.color, 0.04));
+    isoPoly([At, Bt, Ct, Dt], rgba(order.color, 0.11));
+
+    /* windows */
+    const winStyle = (b.type === 'warehouse') ? 'industrial'
+                   : (b.type === 'office' || b.type === 'tower' || b.type === 'monument') ? 'glass'
+                   : 'grid';
+    if (cycles > 0) drawIsoWindows(b.gx, b.gy, b.bw, b.bd, height, order.color, b.seed, winStyle, ox, oy);
+
+    /* crack lines on shadow face */
+    if (cracks > 0) drawIsoCracks(b.gx, b.gy, b.bd, height, cracks, b.seed + bi * 7, ox, oy);
+
+    /* rooftop details */
+    if (cycles >= 1) {
+      if (b.rooftop === 'hvac')       drawIsoRooftopBox(b.gx, b.gy, b.bw, b.bd, height, pal.roof, ox, oy);
+      if (b.rooftop === 'watertower') drawIsoWaterTower(b.gx, b.gy, b.bw, b.bd, height, ox, oy);
+      if (b.rooftop === 'antenna') {
+        const ax  = b.gx + b.bw * 0.62, ay = b.gy + b.bd * 0.38;
+        const aB  = isoP(ax, ay, height, ox, oy);
+        const aT  = isoP(ax, ay, height + 20, ox, oy);
+        ctx.beginPath(); ctx.moveTo(aB.x, aB.y); ctx.lineTo(aT.x, aT.y);
+        ctx.strokeStyle = '#9898b0'; ctx.lineWidth = 1.2; ctx.stroke();
+        ctx.beginPath(); ctx.arc(aT.x, aT.y, 2, 0, Math.PI * 2);
+        ctx.fillStyle = Math.sin(frame * 0.14) > 0.55 ? 'rgba(255,55,55,0.95)' : 'rgba(180,55,55,0.50)';
+        ctx.fill();
+      }
+    }
+
+    /* spire (rank 6, main building only) */
+    if (cycles >= 6 && isMain) drawIsoSpire(b.gx, b.gy, b.bw, b.bd, height, order.color, ox, oy);
+
+    /* crown (rank 9, main building only) */
+    if (cycles >= 9 && isMain) drawIsoCrown(b.gx, b.gy, b.bw, b.bd, height, ox, oy);
+
+    /* Citadel sovereign rings */
+    if (order.id === '144h' && cycles >= 9 && isMain) {
+      const spireH = height + SPIRE_BASE_HEIGHT + Math.min(b.bw, b.bd) * SPIRE_SCALE_FACTOR;
+      const tip    = isoP(b.gx + b.bw / 2, b.gy + b.bd / 2, spireH, ox, oy);
+      [
+        { r:28, a: 0.40 + 0.24 * Math.sin(frame * 0.04),       lw: 2   },
+        { r:44, a: 0.20 + 0.18 * Math.sin(frame * 0.04 + 1.6), lw: 1.5 },
+        { r:62, a: 0.10 + 0.10 * Math.sin(frame * 0.04 + 3.2), lw: 1   },
+      ].forEach(ring => {
+        ctx.beginPath(); ctx.arc(tip.x, tip.y, ring.r, 0, Math.PI * 2);
+        ctx.strokeStyle = `rgba(255,195,52,${ring.a})`; ctx.lineWidth = ring.lw; ctx.stroke();
+      });
+    }
+  });
+
+  /* trees (drawn after buildings for natural layering) */
+  def.trees.forEach(t => drawIsoTree(t.gx, t.gy, t.s, ox, oy));
+}
+
+/* ============================================================
+   CANVAS DISTRICT LABELS  (drawn directly on the city)
+============================================================ */
+function drawCityLabels(ox, oy) {
+  /* Label positions — center of each district */
+  const CENTERS = {
+    '12h':  { gx: 1.6, gy: 1.8 },
+    '24h':  { gx: 6.5, gy: 1.8 },
+    '48h':  { gx: 1.5, gy: 6.5 },
+    '72h':  { gx: 6.5, gy: 6.5 },
+    '144h': { gx: 5.0, gy: 5.0 },
+  };
+  const fontSize = Math.max(8, Math.round(TW * 0.19));
+  ctx.font = `bold ${fontSize}px "Segoe UI",system-ui,sans-serif`;
+  ctx.textAlign = 'center';
+
+  ORDERS.forEach(o => {
+    const os  = state.orders[o.id];
+    const c   = CENTERS[o.id];
+    /* hover height: just above the tallest building in the district */
+    const labelZ = bldH(os.cycles, ISO_CITY[o.id].buildings[0].base, ISO_CITY[o.id].buildings[0].pf) + 28;
+    const pt  = isoP(c.gx, c.gy, labelZ, ox, oy);
+    const active = os.phase === 'fasting';
+
+    /* shadow */
+    ctx.fillStyle = 'rgba(0,0,0,0.65)';
+    ctx.fillText(o.district, pt.x + 1, pt.y + 1);
+    /* label */
+    ctx.fillStyle = active ? o.color : rgba(o.color, 0.50);
+    ctx.fillText(o.district, pt.x, pt.y);
+
+    /* phase badge */
+    if (os.phase !== 'idle') {
+      const badgeFontSize = Math.max(6, Math.round(TW * 0.14));
+      ctx.font = `${badgeFontSize}px "Segoe UI",system-ui,sans-serif`;
+      ctx.fillStyle = active ? rgba(o.color, 0.85) : 'rgba(76,217,138,0.75)';
+      ctx.fillText(active ? '● FASTING' : '◎ RECOVERY', pt.x, pt.y + fontSize + 2);
+      ctx.font = `bold ${fontSize}px "Segoe UI",system-ui,sans-serif`;
+    }
+  });
+  ctx.textAlign = 'left';
+}
+
+/* ============================================================
+   MAIN CITY DRAW
+============================================================ */
+function drawCity() {
+  frame++;
+  const W = canvas.width, H = canvas.height;
+  ctx.clearRect(0, 0, W, H);
+
+  /* ── LA DUSK SKY ── */
+  const sky = ctx.createLinearGradient(0, 0, 0, H);
+  sky.addColorStop(0,    '#0c0520');
+  sky.addColorStop(0.18, '#200938');
+  sky.addColorStop(0.40, '#6c1840');
+  sky.addColorStop(0.60, '#b83c1a');
+  sky.addColorStop(0.76, '#d86818');
+  sky.addColorStop(0.90, '#e09022');
+  sky.addColorStop(1,    '#b87014');
+  ctx.fillStyle = sky; ctx.fillRect(0, 0, W, H);
+
+  /* sun glow */
+  const sG = ctx.createRadialGradient(W * 0.65, H, 0, W * 0.65, H, W * 0.52);
+  sG.addColorStop(0,    'rgba(255,210,90,0.40)');
+  sG.addColorStop(0.28, 'rgba(240,120,30,0.17)');
+  sG.addColorStop(1,    'transparent');
+  ctx.fillStyle = sG; ctx.fillRect(0, 0, W, H);
+
+  /* stars */
+  stars.forEach(st => {
+    const tw = 0.5 + 0.5 * Math.sin(frame * 0.016 + st.s);
+    ctx.beginPath(); ctx.arc(st.x, st.y, st.r, 0, Math.PI * 2);
+    ctx.fillStyle = `rgba(255,230,200,${st.b * tw * 0.65})`; ctx.fill();
+  });
+
+  /* Venus */
+  const vs = 1 + 0.28 * Math.sin(frame * 0.04);
+  const vg = ctx.createRadialGradient(W * 0.12, H * 0.07, 0, W * 0.12, H * 0.07, vs * 7);
+  vg.addColorStop(0, 'rgba(255,240,180,0.50)'); vg.addColorStop(1, 'transparent');
+  ctx.fillStyle = vg; ctx.beginPath(); ctx.arc(W * 0.12, H * 0.07, vs * 7, 0, Math.PI * 2); ctx.fill();
+  ctx.beginPath(); ctx.arc(W * 0.12, H * 0.07, vs * 2, 0, Math.PI * 2);
+  ctx.fillStyle = 'rgba(255,240,180,0.92)'; ctx.fill();
+
+  /* ── CITY ORIGIN ── */
+  const ox = Math.round(W * 0.50);
+  const oy = Math.round(H * 0.46);
+
+  /* ── GROUND TILES (back→front) ── */
+  const ROAD_COL   = '#0a0814';
+  const distGrounds = {
+    '12h':  { gxMin:0, gyMin:0, gxMax:4, gyMax:4, col:'#18140c' },
+    '24h':  { gxMin:5, gyMin:0, gxMax:9, gyMax:4, col:'#0c1220' },
+    '48h':  { gxMin:0, gyMin:5, gxMax:4, gyMax:9, col:'#1a0e06' },
+    '72h':  { gxMin:5, gyMin:5, gxMax:9, gyMax:9, col:'#100c1e' },
+    '144h': { gxMin:4, gyMin:4, gxMax:6, gyMax:6, col:'#1a1400' },
+  };
+
+  for (let sum = 0; sum <= MAX_GRID_SUM; sum++) {
+    for (let gx = Math.max(-1, sum - 10); gx <= Math.min(10, sum + 1); gx++) {
+      const gy = sum - gx;
+      if (gy < -1 || gy > 10) continue;
+      let col = ROAD_COL, edge = 'rgba(0,0,0,0.20)';
+      if (gx !== 4 && gy !== 4) {
+        for (const id of Object.keys(distGrounds)) {
+          const dg = distGrounds[id];
+          if (gx >= dg.gxMin && gx < dg.gxMax && gy >= dg.gyMin && gy < dg.gyMax) {
+            col = dg.col; break;
+          }
+        }
+      }
+      drawGroundTile(gx, gy, col, ox, oy, edge);
+    }
+  }
+
+  /* ── ROAD CENTRE DASHES ── */
+  for (let t = -1; t <= 9; t++) {
+    const rA = isoP(4.46, t + 0.18, 1, ox, oy), rB = isoP(4.46, t + 0.80, 1, ox, oy);
+    ctx.beginPath(); ctx.moveTo(rA.x, rA.y); ctx.lineTo(rB.x, rB.y);
+    ctx.strokeStyle = 'rgba(200,150,50,0.24)'; ctx.lineWidth = 1.2; ctx.stroke();
+    const rC = isoP(t + 0.18, 4.46, 1, ox, oy), rD = isoP(t + 0.80, 4.46, 1, ox, oy);
+    ctx.beginPath(); ctx.moveTo(rC.x, rC.y); ctx.lineTo(rD.x, rD.y);
+    ctx.strokeStyle = 'rgba(200,150,50,0.24)'; ctx.lineWidth = 1.2; ctx.stroke();
+  }
+
+  /* ── CROSSWALK STRIPES at intersection ── */
+  for (let s = 0; s < 4; s++) {
+    const t = 0.1 + s * 0.23;
+    const cA = isoP(4 + t,        3.78, 0.8, ox, oy);
+    const cB = isoP(4 + t + 0.15, 3.78, 0.8, ox, oy);
+    const cC = isoP(4 + t + 0.15, 4.02, 0.8, ox, oy);
+    const cD = isoP(4 + t,        4.02, 0.8, ox, oy);
+    isoPoly([cA, cB, cC, cD], 'rgba(210,200,170,0.15)');
+  }
+
+  /* ── ANIMATED CARS ── */
+  const carProgress = (frame % 180) / 180;   /* 0→1 per ~3s */
+  const carColors   = ['#c83020','#20805e','#304899','#c09020','#903080'];
+  /* car 1: N-S road, heading south */
+  const c1 = isoP(4.22, 1 + carProgress * 8, 2, ox, oy);
+  ctx.fillStyle = carColors[0];
+  ctx.save(); ctx.translate(c1.x, c1.y); ctx.rotate(Math.PI * 0.08);
+  ctx.fillRect(-4, -2.5, 8, 5); ctx.restore();
+  /* car 2: E-W road, heading west */
+  const c2 = isoP(9 - carProgress * 8, 4.70, 2, ox, oy);
+  ctx.fillStyle = carColors[2];
+  ctx.save(); ctx.translate(c2.x, c2.y); ctx.rotate(-Math.PI * 0.08);
+  ctx.fillRect(-4, -2.5, 8, 5); ctx.restore();
+  /* offset second car on each road */
+  const cp2 = ((frame + 90) % 180) / 180;
+  const c3 = isoP(4.72, 1 + cp2 * 8, 2, ox, oy);
+  ctx.fillStyle = carColors[1];
+  ctx.save(); ctx.translate(c3.x, c3.y); ctx.rotate(Math.PI * 0.08);
+  ctx.fillRect(-4, -2.5, 8, 5); ctx.restore();
+  const c4 = isoP(9 - cp2 * 8, 4.20, 2, ox, oy);
+  ctx.fillStyle = carColors[4];
+  ctx.save(); ctx.translate(c4.x, c4.y); ctx.rotate(-Math.PI * 0.08);
+  ctx.fillRect(-4, -2.5, 8, 5); ctx.restore();
+
+  /* ── DRAW DISTRICTS  back → front ── */
+  const DRAW_ORDER = ['12h', '24h', '48h', '144h', '72h'];
+  DRAW_ORDER.forEach(id => {
+    drawIsoDistrict(ORDERS.find(x => x.id === id), state.orders[id], ox, oy);
+  });
+
+  /* ── DISTRICT LABELS on canvas ── */
+  drawCityLabels(ox, oy);
+
+  /* ── UPDATE DOM LABEL BAR colours ── */
+  const lbls = document.querySelectorAll('.district-label');
+  ORDERS.forEach((o, i) => {
+    if (!lbls[i]) return;
+    const active = state.orders[o.id].phase === 'fasting';
+    lbls[i].classList.toggle('active', active);
+    lbls[i].style.color = active ? o.color : '';
+  });
+}
+
+/* ============================================================
+   UI RENDER
+============================================================ */
+function renderIdentity() {
+  const id = getIdentity();
+  document.getElementById('identity-title').textContent = id.title;
+  document.getElementById('identity-sub').textContent   = id.sub;
+}
+
+function renderStability() {
+  const s=getStability();
+  document.getElementById('stab-fill').style.width = s+'%';
+  document.getElementById('stab-score').textContent = s+'%';
+  const sf=document.getElementById('stab-fill'), sc=document.getElementById('stab-score');
+  if      (s>=80){ sf.style.background='linear-gradient(90deg,#c47020,#f0b840)'; sc.style.color='#f0b840'; }
+  else if (s>=60){ sf.style.background='linear-gradient(90deg,#b05010,#e07020)'; sc.style.color='#e07020'; }
+  else if (s>=40){ sf.style.background='linear-gradient(90deg,#8a1818,#c02828)'; sc.style.color='#e03030'; }
+  else           { sf.style.background='linear-gradient(90deg,#601010,#b01818)'; sc.style.color='#d02020'; }
+}
+
+function renderCards() {
+  const grid=document.getElementById('ordersGrid');
+  grid.innerHTML='';
+  ORDERS.forEach(o => {
+    const os=state.orders[o.id], rank=getRank(os.cycles);
+    const rem=getRemaining(o.id), prog=getProgress(o.id);
+    const ready=isComplete(o.id), mas=getMasteryBonus(o.id);
+    let phaseHtml='', actionsHtml='', hintText='';
+
+    if (os.phase==='fasting') {
+      phaseHtml=`
+        <div class="phase-row"><div class="phase-dot fasting"></div><span class="phase-text fasting">FASTING</span></div>
+        <div class="timer ${ready?'ready':''}">${ready?'✦ READY TO SEAL':fmtMs(rem)}</div>
+        <div class="prog-bar"><div class="prog-fill" style="width:${Math.round(prog*100)}%"></div></div>`;
+      const sealClass = ready ? 'ready' : 'locked';
+      const sealLabel = ready ? '◆ SEAL CYCLE' : '⚡ FORCE SEAL';
+      const sealTitle = ready ? 'Seal this completed cycle' : 'Phase not complete — sealing early causes structural damage';
+      actionsHtml=`<button class="btn btn-seal ${sealClass}" title="${sealTitle}" onclick="sealCycle('${o.id}')">${sealLabel}</button>
+                   <button class="btn btn-void" title="Void — records a crack" onclick="voidCycle('${o.id}')">⚑ VOID</button>`;
+      hintText = ready
+        ? 'Fast complete! Hit SEAL CYCLE to bank it and grow your building.'
+        : 'Hold the line. VOID ends the fast early (records a crack). FORCE SEAL also records a crack.';
+
+    } else if (os.phase==='recovery') {
+      const rr=getRemaining(o.id);
+      phaseHtml=`
+        <div class="phase-row"><div class="phase-dot recovery"></div><span class="phase-text recovery">RECOVERY</span></div>
+        <div class="timer" style="color:#4cd98a;font-size:17px">${fmtMs(rr)}</div>
+        <div class="prog-bar"><div class="prog-fill" style="width:${Math.round((1-prog)*100)}%;background:var(--green)"></div></div>`;
+      actionsHtml=`<button class="btn btn-recovery" onclick="endRecovery('${o.id}')">◎ END RECOVERY</button>`;
+      hintText = 'District is resting. Wait for recovery to end or skip it to start the next cycle immediately.';
+
+    } else {
+      phaseHtml=`
+        <div class="phase-row"><div class="phase-dot"></div><span class="phase-text">IDLE</span></div>
+        <div class="timer idle">${o.dur}:00:00</div>
+        <div class="prog-bar"><div class="prog-fill" style="width:0%"></div></div>`;
+      actionsHtml=`<button class="btn btn-start" onclick="startFasting('${o.id}')">▶ BEGIN FAST</button>`;
+      const nextRank = rank.tier === 0 ? 'Initiate'
+                     : rank.tier < 3  ? `Third Gate at 3 cycles`
+                     : rank.tier < 6  ? `Sixth Path at 6 cycles (spire!)`
+                     : rank.tier < 9  ? `Ninth Seal at 9 cycles (crown!)`
+                     : 'Ninth Seal — max rank reached';
+      hintText = `Start a ${o.dur}h fast. Next rank: ${nextRank}.`;
+    }
+
+    const card=document.createElement('div');
+    card.className=`order-card is-${os.phase}`;
+    card.style.setProperty('--oc',o.color);
+    card.innerHTML=`
+      <div class="oc-label">${o.district}</div>
+      <div class="oc-duration">${o.label}</div>
+      <div class="rank-block">
+        <div class="rank-name">${rank.sym} ${rank.name}</div>
+        <div class="rank-cycles">${os.cycles} cycle${os.cycles!==1?'s':''} sealed · ${os.cracks} crack${os.cracks!==1?'s':''}</div>
+      </div>
+      ${phaseHtml}
+      <div class="stats-row">
+        <div class="stat"><div class="stat-val">${os.cycles}</div><div class="stat-lbl">Cycles</div></div>
+        <div class="stat cracks"><div class="stat-val">${os.cracks}</div><div class="stat-lbl">Cracks</div></div>
+        <div class="stat"><div class="stat-val">${rank.tier}</div><div class="stat-lbl">Tier</div></div>
+      </div>
+      <div class="mastery-badge${mas>0?' visible':''}">⬆ Mastery Bonus: +${mas}%</div>
+      <div class="actions">${actionsHtml}</div>
+      <div class="card-hint">${hintText}</div>`;
+    grid.appendChild(card);
+  });
+}
+
+function renderChronicle() {
+  const log=document.getElementById('chronLog'), cnt=document.getElementById('chronCount');
+  cnt.textContent=`${state.chronicle.length} entr${state.chronicle.length!==1?'ies':'y'}`;
+  if (!state.chronicle.length) {
+    log.innerHTML='<div class="chron-empty">The chronicle awaits your first cycle…</div>'; return;
+  }
+  log.innerHTML=state.chronicle.map(e=>`
+    <div class="chron-entry">
+      <div class="chron-icon" style="color:${e.color}">${e.icon}</div>
+      <div class="chron-body">
+        <div class="chron-title" style="color:${e.color}">${e.title}</div>
+        <div class="chron-text">${e.text}</div>
+        <div class="chron-time">${e.ts}</div>
+      </div>
+    </div>`).join('');
+}
+
+function buildDistrictLabels() {
+  document.getElementById('districtLabels').innerHTML =
+    ORDERS.map(o=>`<div class="district-label" id="dlbl-${o.id}">${o.district}</div>`).join('');
+}
+
+/* -- Guide panel toggle -- */
+function toggleGuide() {
+  const body    = document.getElementById('guideBody');
+  const chevron = document.getElementById('guideChevron');
+  const row     = document.getElementById('guideRow');
+  const open    = body.classList.toggle('open');
+  chevron.classList.toggle('open', open);
+  row.setAttribute('aria-expanded', open);
+}
+
+function fullRender() { renderIdentity(); renderStability(); renderCards(); renderChronicle(); }
+
+/* ============================================================
+   ANIMATION LOOP & TIMER
+============================================================ */
+function animate() { drawCity(); requestAnimationFrame(animate); }
+
+setInterval(() => {
+  let changed=false;
+  ORDERS.forEach(o => {
+    const os=state.orders[o.id];
+    if (os.phase==='recovery' && os.phaseEnd && Date.now()>=os.phaseEnd) { endRecovery(o.id); changed=true; }
+  });
+  if (!changed) { renderCards(); renderIdentity(); renderStability(); }
+}, 1000);
+
+/* ============================================================
+   INIT
+============================================================ */
+window.addEventListener('DOMContentLoaded', () => {
+  initState(); resizeCanvas(); genStars(); buildDistrictLabels(); fullRender();
+  requestAnimationFrame(animate);
+});
+window.addEventListener('resize', () => { resizeCanvas(); genStars(); });
+
+// Expose for inline handlers
+window.startFasting = startFasting;
+window.sealCycle    = sealCycle;
+window.voidCycle    = voidCycle;
+window.endRecovery  = endRecovery;
+window.toggleGuide  = toggleGuide;
+</script>
+</body>
+</html>
